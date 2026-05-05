@@ -21,10 +21,13 @@ function Tabs() {
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarStyle: {
-          backgroundColor: "#fff",
-          borderTopWidth: 1,
-          borderColor: colors.border,
-        },
+        backgroundColor: "#fff",
+        height: 120,
+      },
+        tabBarLabelStyle: {
+        fontSize: 12,
+        marginTop: 15
+      },
       }}
     >
       <Tab.Screen
@@ -32,10 +35,15 @@ function Tabs() {
         component={Diary}
         options={{
           tabBarLabel: "Diário",
-          tabBarIcon: () => (
+          tabBarIcon: ({focused}) => (
             <Image
-              source={require("./assets/icons/diary.png")}
-              style={{ width: 24, height: 24 }}
+              source={require("./assets/icons/pokecenter-3.png")}
+                  style={{
+                    width: 50,
+                    height: 50,
+                    marginBottom: 10,
+                    marginTop: 21
+                  }}
             />
           ),
         }}
@@ -46,10 +54,15 @@ function Tabs() {
         component={Alerts}
         options={{
           tabBarLabel: "Alertas",
-          tabBarIcon: () => (
+          tabBarIcon: ({focused}) => (
             <Image
-              source={require("./assets/icons/alert.png")}
-              style={{ width: 24, height: 24 }}
+              source={require("./assets/icons/pokealert-1.png")}
+                  style={{
+                    width: 32,
+                    height: 38,
+                    marginBottom: 10,
+                    marginTop: 21
+                  }}
             />
           ),
         }}
@@ -60,10 +73,15 @@ function Tabs() {
         component={AI}
         options={{
           tabBarLabel: "IA",
-          tabBarIcon: () => (
+          tabBarIcon: ({focused}) => (
             <Image
-              source={require("./assets/icons/ai.png")}
-              style={{ width: 24, height: 24 }}
+              source={require("./assets/icons/rotondex-1.png")}
+                  style={{
+                    width: 55,
+                    height: 36,
+                    marginBottom: 10,
+                    marginTop: 21
+                  }}
             />
           ),
         }}
@@ -74,10 +92,15 @@ function Tabs() {
         component={Profile}
         options={{
           tabBarLabel: "Perfil",
-          tabBarIcon: () => (
+          tabBarIcon: ({focused}) => (
             <Image
-              source={require("./assets/icons/user.png")}
-              style={{ width: 24, height: 24 }}
+              source={require("./assets/icons/poketrainer.png")}
+                  style={{
+                    width: 40,
+                    height: 40,
+                    marginBottom: 10,
+                    marginTop: 21
+                  }}
             />
           ),
         }}

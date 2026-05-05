@@ -1,13 +1,13 @@
 import { View, Text } from "react-native";
-import { styles } from "../styles/global";
+import { styles_gb } from "../styles/global";
 
 const AI = () => {
   return (
-    <View style={styles.center}>
-      <Text style={styles.placeholderTitle}>
+    <View style={styles_gb.center}>
+      <Text style={styles_gb.placeholderTitle}>
         IA em desenvolvimento
       </Text>
-      <Text style={styles.placeholderSub}>
+      <Text style={styles_gb.placeholderSub}>
         (Ainda estamos treinando o cérebro dela...)
       </Text>
     </View>

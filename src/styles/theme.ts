@@ -10,7 +10,7 @@ export const colors = {
   border: "#F0DADA",
 };
 
-export const styles = StyleSheet.create({
+export const styles_th = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,

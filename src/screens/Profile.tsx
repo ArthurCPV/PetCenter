@@ -1,14 +1,13 @@
 import { View, Text } from "react-native";
-import { global, styles } from "../styles/global";
-import { theme } from "../styles/theme";
+import { styles_gb } from "../styles/global";
 
 const Profile = () => {
   return (
-    <View style={styles.center}>
-      <Text style={styles.placeholderTitle}>
+    <View style={styles_gb.center}>
+      <Text style={styles_gb.placeholderTitle}>
         Perfil do usuário
       </Text>
-      <Text style={styles.placeholderSub}>
+      <Text style={styles_gb.placeholderSub}>
         (Quase pronto… confia 😅)
       </Text>
     </View>

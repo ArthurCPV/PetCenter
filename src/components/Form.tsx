@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, TextInput, TouchableOpacity, Text } from "react-native";
-import { styles } from "../styles/theme";
+import { styles_th } from "../styles/theme";
 
 type Props = {
   onSubmit: (text: string) => void;
@@ -17,16 +17,16 @@ const Form: React.FC<Props> = ({ onSubmit }) => {
   };
 
   return (
-    <View style={styles.form}>
+    <View style={styles_th.form}>
       <TextInput
-        style={styles.input}
+        style={styles_th.input}
         placeholder="Como seu pet está hoje?"
         value={text}
         onChangeText={setText}
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>+</Text>
+      <TouchableOpacity style={styles_th.button} onPress={handleSubmit}>
+        <Text style={styles_th.buttonText}>+</Text>
       </TouchableOpacity>
     </View>
   );

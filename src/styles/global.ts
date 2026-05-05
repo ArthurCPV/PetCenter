@@ -2,11 +2,32 @@
 import { StyleSheet } from "react-native";
 import { colors } from "./theme";
 
-export const styles = StyleSheet.create({
+export const styles_gb = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
     paddingTop: 50,
+  },
+
+    center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+
+  placeholderTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: colors.primary,
+    textAlign: "center",
+  },
+
+  placeholderSub: {
+    fontSize: 12,
+    color: "#999",
+    marginTop: 5,
+    textAlign: "center",
   },
 
   header: {
@@ -84,30 +105,5 @@ export const styles = StyleSheet.create({
     fontSize: 12,
     color: "#777",
     marginTop: 4,
-  },
-
-  // 🔥 TAB BAR (novo)
-  tabBar: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.card,
-  },
-
-  tabItem: {
-    alignItems: "center",
-  },
-
-  tabIcon: {
-    width: 28,
-    height: 28,
-  },
-
-  tabText: {
-    fontSize: 10,
-    marginTop: 2,
-    color: colors.text,
   },
 });

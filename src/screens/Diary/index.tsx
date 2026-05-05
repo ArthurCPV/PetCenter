@@ -3,7 +3,7 @@ import { View, Text, FlatList } from "react-native";
 import Form from "../../components/Form";
 import EntryCard from "../../components/EntryCard";
 import { useDiary } from "../../store/useDiary";
-import { styles } from "../../styles/theme";
+import { styles_th } from "../../styles/theme";
 import { DiaryEntry } from "../../types";
 
 import { Image } from "react-native";
@@ -43,21 +43,21 @@ const Diary = () => {
   const data = Object.entries(grouped) as [string, DiaryEntry[]][];
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.headerRow}>
+    <View style={styles_th.container}>
+      <View style={styles_th.header}>
+        <View style={styles_th.headerRow}>
           <Image
-            source={require("../../../assets/pokecenter-4.png")} // ajuste o caminho se necessário
-            style={styles.logo}
+            source={require("../../../assets/icons/pokecenter-4.png")}
+            style={styles_th.logo}
           />
-          <Text style={styles.title}>PetCenter</Text>
+          <Text style={styles_th.title}>PetCenter</Text>
         </View>
       </View>
 
       <Form onSubmit={addEntry} />
 
       {entries.length === 0 && (
-        <Text style={styles.emptyText}>
+        <Text style={styles_th.emptyText}>
           Nenhum registro ainda. Comece hoje ✨
         </Text>
       )}
@@ -72,7 +72,7 @@ const Diary = () => {
 
           return (
             <>
-              <Text style={styles.sectionTitle}>{section}</Text>
+              <Text style={styles_th.sectionTitle}>{section}</Text>
               {entries.map((entry) => (
                 <EntryCard key={entry.id} entry={entry} />
               ))}

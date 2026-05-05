@@ -1,16 +1,16 @@
 import { View, Text } from "react-native";
 import { useRoute } from "@react-navigation/native";
-import { styles } from "../styles/global";
+import { styles_gb } from "../styles/global";
 
 const Details = () => {
   const { params }: any = useRoute();
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Detalhes</Text>
+    <View style={styles_gb.container}>
+      <Text style={styles_gb.title}>Detalhes</Text>
 
-      <Text style={styles.itemTitle}>{params.task.title}</Text>
-      <Text style={styles.itemDate}>
+      <Text style={styles_gb.itemTitle}>{params.task.title}</Text>
+      <Text style={styles_gb.itemDate}>
         {new Date(params.task.createdAt).toLocaleString()}
       </Text>
     </View>

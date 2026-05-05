@@ -1,17 +1,17 @@
 import { Text, TouchableOpacity } from "react-native";
-import { Task } from "../types";
-import { styles } from "../styles/global";
+import { DiaryEntry } from "../types";
+import { styles_gb } from "../styles/global";
 import { useNavigation } from "@react-navigation/native";
 
-const Item = ({ task }: { task: Task }) => {
+const Item = ({ entry }: { entry: DiaryEntry }) => {
   const navigation = useNavigation<any>();
 
   return (
     <TouchableOpacity
-      style={styles.item}
-      onPress={() => navigation.navigate("Details", { task })}
+      style={styles_gb.item}
+      onPress={() => navigation.navigate("Details", { entry })}
     >
-      <Text style={styles.itemTitle}>{task.title}</Text>
+      <Text style={styles_gb.itemTitle}>{entry.title}</Text>
     </TouchableOpacity>
   );
 };
