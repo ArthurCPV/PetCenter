@@ -8,7 +8,7 @@ const Profile = () => {
         Perfil do usuário
       </Text>
       <Text style={styles_gb.placeholderSub}>
-        (Quase pronto… confia 😅)
+        (Quase pronto…)
       </Text>
     </View>
   );

@@ -1,42 +1,74 @@
 import { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { DiaryEntry } from "../types";
+import { DiaryEntry, PetDiary } from "../types";
 
-const STORAGE_KEY = "DIARY_ENTRIES";
+const STORAGE_KEY = "PET_DIARIES";
 
 export const useDiary = () => {
-  const [entries, setEntries] = useState<DiaryEntry[]>([]);
+  const [pets, setPets] = useState<PetDiary[]>([]);
 
   useEffect(() => {
-    loadEntries();
+    loadPets();
   }, []);
 
-  const loadEntries = async () => {
+  const loadPets = async () => {
     const data = await AsyncStorage.getItem(STORAGE_KEY);
+
     if (data) {
-      const parsed = JSON.parse(data).map((item: any) => ({
-        ...item,
-        createdAt: new Date(item.createdAt),
-      }));
-      setEntries(parsed);
+      const parsed = JSON.parse(data);
+
+      setPets(parsed);
     }
   };
 
-  const saveEntries = async (newEntries: DiaryEntry[]) => {
-    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newEntries));
+  const savePets = async (newPets: PetDiary[]) => {
+    await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newPets));
   };
 
-  const addEntry = (title: string) => {
-    const newEntry: DiaryEntry = {
+  const addPet = (
+    name: string,
+    species: string,
+    breed?: string,
+    birthDate?: string
+  ) => {
+    const newPet: PetDiary = {
       id: String(Date.now()),
-      title,
-      createdAt: new Date(),
+      name,
+      species,
+      breed,
+      birthDate,
+      entries: [],
     };
 
-    const updated = [newEntry, ...entries];
-    setEntries(updated);
-    saveEntries(updated);
+    const updated = [newPet, ...pets];
+
+    setPets(updated);
+    savePets(updated);
   };
 
-  return { entries, addEntry };
+  const addEntry = (petId: string, text: string) => {
+    const updated = pets.map((pet) => {
+      if (pet.id !== petId) return pet;
+
+      const newEntry: DiaryEntry = {
+        id: String(Date.now()),
+        title: text,
+        createdAt: new Date(),
+      };
+
+      return {
+        ...pet,
+        entries: [newEntry, ...pet.entries],
+      };
+    });
+
+    setPets(updated);
+    savePets(updated);
+  };
+
+  return {
+    pets,
+    addPet,
+    addEntry,
+  };
 };

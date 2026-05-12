@@ -7,6 +7,8 @@ import Details from "./src/screens/Details";
 import Alerts from "./src/screens/Alerts";
 import AI from "./src/screens/AI";
 import Profile from "./src/screens/Profile";
+import Welcome from "./src/screens/Welcome";
+import Login from "./src/screens/Login";
 
 import { Image } from "react-native";
 import { colors } from "./src/styles/theme";
@@ -21,13 +23,9 @@ function Tabs() {
         headerShown: false,
         tabBarActiveTintColor: colors.primary,
         tabBarStyle: {
-        backgroundColor: "#fff",
-        height: 120,
-      },
-        tabBarLabelStyle: {
-        fontSize: 12,
-        marginTop: 15
-      },
+          backgroundColor: "#fff",
+          height: 120,
+        },
       }}
     >
       <Tab.Screen
@@ -112,12 +110,10 @@ function Tabs() {
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen
-          name="Home"
-          component={Tabs}
-          options={{ headerShown: false }}
-        />
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Welcome" component={Welcome} />
+        <Stack.Screen name="Login" component={Login} />
+        <Stack.Screen name="Home" component={Tabs} />
         <Stack.Screen name="Details" component={Details} />
       </Stack.Navigator>
     </NavigationContainer>

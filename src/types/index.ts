@@ -3,3 +3,13 @@ export type DiaryEntry = {
   title: string;
   createdAt: Date;
 };
+
+export type PetDiary = {
+  id: string;
+  name: string;
+  species: string;
+  breed?: string;
+  birthDate?: string;
+
+  entries: DiaryEntry[];
+};
