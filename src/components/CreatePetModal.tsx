@@ -8,6 +8,7 @@ import {
 } from "react-native";
 
 import { styles_th, colors } from "../styles/theme";
+import { styles_gb } from "../styles/global";
 
 type Props = {
   visible: boolean;
@@ -46,19 +47,10 @@ const CreatePetModal: React.FC<Props> = ({
   return (
     <Modal visible={visible} transparent animationType="fade">
       <View
-        style={{
-          flex: 1,
-          backgroundColor: "rgba(0,0,0,0.45)",
-          justifyContent: "center",
-          padding: 20,
-        }}
+        style={styles_gb.modalOverlay}
       >
         <View
-          style={{
-            backgroundColor: "#fff",
-            borderRadius: 24,
-            padding: 20,
-          }}
+          style={styles_gb.modalContainer}
         >
           {/* BOTÃO FECHAR */}
           <TouchableOpacity

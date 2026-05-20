@@ -8,6 +8,8 @@ import {
 } from "react-native";
 
 import { styles_th } from "../../styles/theme";
+import { styles_gb } from "../../styles/global";
+
 import { useDiary } from "../../store/useDiary";
 
 import CreatePetModal from "../../components/CreatePetModal";
@@ -26,9 +28,9 @@ const Diary = () => {
   const [modalVisible, setModalVisible] = useState(false);
 
   return (
-    <View style={styles_th.container}>
+    <View style={styles_th.screen}>
       {/* HEADER */}
-      <View style={styles_th.header}>
+      <View style={styles_gb.header}>
         <Text style={styles_th.title}>PetCenter</Text>
 
         <Text style={styles_th.subtitle}>
@@ -46,13 +48,7 @@ const Diary = () => {
           <TouchableOpacity
             style={[
               styles_th.button,
-              {
-                width: "90%",
-                alignSelf: "center",
-                borderRadius: 16,
-                marginBottom: 20,
-                marginLeft: 0,
-              },
+              styles_gb.fullButton
             ]}
             onPress={() => setModalVisible(true)}
           >
@@ -96,10 +92,7 @@ const Diary = () => {
           {/* VOLTAR */}
           <TouchableOpacity
             onPress={() => setSelectedPet(null)}
-            style={{
-              marginLeft: 20,
-              marginBottom: 10,
-            }}
+            style={styles_gb.backButton}
           >
             <Text
               style={{

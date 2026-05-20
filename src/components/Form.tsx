@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { View, TextInput, TouchableOpacity, Text } from "react-native";
 import { styles_th } from "../styles/theme";
+import { styles_gb } from "../styles/global";
 
 type Props = {
   onSubmit: (text: string) => void;
@@ -17,7 +18,7 @@ const Form: React.FC<Props> = ({ onSubmit }) => {
   };
 
   return (
-    <View style={styles_th.form}>
+    <View style={styles_gb.formRow}>
       <TextInput
         style={styles_th.input}
         placeholder="Como seu pet está hoje?"

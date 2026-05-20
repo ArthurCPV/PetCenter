@@ -11,107 +11,107 @@ export const colors = {
 };
 
 export const styles_th = StyleSheet.create({
-  container: {
+  /* BACKGROUND */
+
+  screen: {
     flex: 1,
     backgroundColor: colors.background,
-    paddingTop: 50,
   },
 
-  header: {
-    paddingHorizontal: 20,
-    marginBottom: 10,
-  },
-
-  headerRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 8,
-},
-
-logo: {
-  width: 32,
-  height: 32,
-  resizeMode: "contain",
-},
+  /* TITLES */
 
   title: {
-    fontSize: 26,
+    fontSize: 40,
     fontWeight: "bold",
     color: colors.primary,
   },
 
   subtitle: {
+    fontSize: 17,
+    color: "#777",
+    marginTop: 5,
+  },
+
+  sectionTitle: {
+    marginHorizontal: 20,
+    marginBottom: 14,
+    fontSize: 24,
+    fontWeight: "700",
+    color: colors.primary,
+  },
+
+  /* PLACEHOLDERS */
+
+  placeholderTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: colors.primary,
+    textAlign: "center",
+  },
+
+  placeholderSub: {
     fontSize: 14,
     color: "#777",
-  },
-
-  form: {
-    flexDirection: "row",
-    paddingHorizontal: 20,
-    marginBottom: 15,
-  },
-
-  input: {
-    flex: 1,
-    backgroundColor: colors.card,
-    borderRadius: 20,
-    paddingHorizontal: 15,
-    height: 50,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-
-  button: {
-    backgroundColor: colors.primary,
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: "center",
-    alignItems: "center",
-    marginLeft: 10,
-    elevation: 3,
-  },
-
-  buttonText: {
-    color: "#fff",
-    fontSize: 26,
-    fontWeight: "bold",
+    marginTop: 6,
+    textAlign: "center",
   },
 
   emptyText: {
     textAlign: "center",
-    marginTop: 30,
+    marginTop: 50,
     color: "#999",
+    fontSize: 15,
   },
 
-  sectionTitle: {
-    marginLeft: 20,
-    marginTop: 15,
-    marginBottom: 5,
-    fontWeight: "600",
-    color: colors.primary,
+  /* INPUT */
+
+  input: {
+    flex: 1,
+    backgroundColor: colors.card,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 16,
+    color: colors.text,
+    fontSize: 15,
   },
+
+  /* BUTTON */
+
+  button: {
+    backgroundColor: colors.primary,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 4,
+  },
+
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+
+  /* CARD */
 
   item: {
     backgroundColor: colors.card,
-    padding: 15,
+    padding: 18,
     marginHorizontal: 20,
-    marginVertical: 6,
-    borderRadius: 16,
+    marginBottom: 14,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: colors.border,
   },
 
   itemTitle: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 18,
+    fontWeight: "700",
     color: colors.text,
   },
 
   itemDate: {
-    fontSize: 12,
+    fontSize: 13,
     color: "#777",
-    marginTop: 4,
+    marginTop: 5,
   },
 });

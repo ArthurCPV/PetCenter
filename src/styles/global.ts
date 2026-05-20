@@ -1,109 +1,97 @@
-// src/styles/global.ts
 import { StyleSheet } from "react-native";
-import { colors } from "./theme";
 
 export const styles_gb = StyleSheet.create({
+  /* CONTAINERS */
+
   container: {
     flex: 1,
-    backgroundColor: colors.background,
-    paddingTop: 50,
   },
 
-    center: {
+  screen: {
+    flex: 1,
+    paddingTop: 60,
+  },
+
+  center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: 24,
+  },
+
+    screenPadding: {
     paddingHorizontal: 20,
   },
 
-  placeholderTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: colors.primary,
-    textAlign: "center",
-  },
-
-  placeholderSub: {
-    fontSize: 12,
-    color: "#999",
-    marginTop: 5,
-    textAlign: "center",
-  },
+  /* HEADER */
 
   header: {
-    paddingHorizontal: 20,
-    marginBottom: 10,
+    paddingHorizontal: 24,
+    paddingBottom: 25,
   },
 
-  title: {
-    fontSize: 26,
-    fontWeight: "bold",
-    color: colors.primary,
-  },
-
-  subtitle: {
-    fontSize: 14,
-    color: "#777",
-  },
-
-  form: {
+    spaceBetween: {
     flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  /* LAYOUTS */
+
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  formRow: {
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: 20,
+    marginBottom: 22,
+  },
+
+  /* BUTTONS */
+
+  fullButton: {
+    width: "90%",
+    alignSelf: "center",
+    marginBottom: 20,
+  },
+
+  backButton: {
+    marginLeft: 20,
     marginBottom: 15,
   },
 
-  input: {
+  /* MODAL */
+
+  modalOverlay: {
     flex: 1,
-    backgroundColor: colors.card,
-    borderRadius: 20,
-    paddingHorizontal: 15,
-    height: 50,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-
-  button: {
-    backgroundColor: colors.primary,
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    backgroundColor: "rgba(0,0,0,0.45)",
     justifyContent: "center",
-    alignItems: "center",
-    marginLeft: 10,
-    elevation: 3,
+    padding: 20,
   },
 
-  buttonText: {
-    color: "#fff",
-    fontSize: 26,
-    fontWeight: "bold",
+  modalContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 24,
+    padding: 20,
   },
 
-  emptyText: {
-    textAlign: "center",
-    marginTop: 30,
-    color: "#999",
+  /* TAB BAR */
+
+  tabBar: {
+    height: 88,
+    paddingTop: 8,
+    paddingBottom: 8,
   },
 
-  item: {
-    backgroundColor: colors.card,
-    padding: 15,
-    marginHorizontal: 20,
-    marginVertical: 6,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
+  tabLabel: {
+    fontSize: 11,
+    marginTop: -4,
   },
 
-  itemTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: colors.text,
-  },
-
-  itemDate: {
-    fontSize: 12,
-    color: "#777",
-    marginTop: 4,
+  tabIconContainer: {
+    marginTop: 2,
   },
 });

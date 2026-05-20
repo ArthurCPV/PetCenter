@@ -6,7 +6,7 @@ const Welcome = ({ navigation }: any) => {
   return (
     <View
       style={[
-        styles_th.container,
+        styles_th.screen,
         {
           justifyContent: "center",
           alignItems: "center",

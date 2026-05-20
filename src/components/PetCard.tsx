@@ -1,6 +1,7 @@
 import React from "react";
 import { TouchableOpacity, Text, View } from "react-native";
 import { styles_th } from "../styles/theme";
+import { styles_gb } from "../styles/global";
 
 const PetCard = ({ pet, onPress }: any) => {
   return (
@@ -8,10 +9,7 @@ const PetCard = ({ pet, onPress }: any) => {
       <Text style={styles_th.itemTitle}>{pet.name}</Text>
 
       <View
-        style={{
-          flexDirection: "row",
-          marginTop: 5,
-        }}
+        style={styles_gb.row}
       >
         <Text style={styles_th.itemDate}>
           {pet.species}

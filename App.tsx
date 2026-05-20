@@ -12,6 +12,7 @@ import Login from "./src/screens/Login";
 
 import { Image } from "react-native";
 import { colors } from "./src/styles/theme";
+import { styles_gb } from "./src/styles/global";
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -21,10 +22,21 @@ function Tabs() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
+
         tabBarActiveTintColor: colors.primary,
+
         tabBarStyle: {
           backgroundColor: "#fff",
-          height: 120,
+          borderTopWidth: 0,
+          elevation: 8,
+          ...styles_gb.tabBar,
+        },
+
+        tabBarLabelStyle: styles_gb.tabLabel,
+
+        tabBarItemStyle: {
+          justifyContent: "center",
+          alignItems: "center",
         },
       }}
     >
@@ -38,9 +50,7 @@ function Tabs() {
               source={require("./assets/icons/pokecenter-3.png")}
                   style={{
                     width: 50,
-                    height: 50,
-                    marginBottom: 10,
-                    marginTop: 21
+                    height: 50
                   }}
             />
           ),
@@ -57,9 +67,7 @@ function Tabs() {
               source={require("./assets/icons/pokealert-1.png")}
                   style={{
                     width: 32,
-                    height: 38,
-                    marginBottom: 10,
-                    marginTop: 21
+                    height: 38
                   }}
             />
           ),
@@ -76,9 +84,7 @@ function Tabs() {
               source={require("./assets/icons/rotondex-1.png")}
                   style={{
                     width: 55,
-                    height: 36,
-                    marginBottom: 10,
-                    marginTop: 21
+                    height: 36
                   }}
             />
           ),
@@ -95,9 +101,7 @@ function Tabs() {
               source={require("./assets/icons/poketrainer.png")}
                   style={{
                     width: 40,
-                    height: 40,
-                    marginBottom: 10,
-                    marginTop: 21
+                    height: 40
                   }}
             />
           ),
