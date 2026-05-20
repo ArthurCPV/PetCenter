@@ -82,7 +82,7 @@ const Diary = () => {
             )}
             ListEmptyComponent={
               <Text style={styles_th.emptyText}>
-                Nenhum diário criado ainda ✨
+                Nenhum diário criado ainda.
               </Text>
             }
           />
