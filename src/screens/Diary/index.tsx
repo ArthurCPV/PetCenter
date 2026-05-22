@@ -31,7 +31,7 @@ const Diary = () => {
     <View style={styles_th.screen}>
       {/* HEADER */}
       <View style={styles_gb.header}>
-        <Text style={styles_th.title}>PetCenter</Text>
+        <Text style={[styles_th.title,{marginTop: 50}]}>PetCenter</Text>
 
         <Text style={styles_th.subtitle}>
           Diário inteligente do seu pet

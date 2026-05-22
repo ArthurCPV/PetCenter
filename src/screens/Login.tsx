@@ -12,7 +12,7 @@ const Login = ({ navigation }: any) => {
   return (
     <View style={styles_th.screen}>
       <View style={{ padding: 25 }}>
-        <Text style={styles_th.title}>Entrar</Text>
+        <Text style={[styles_th.title, {marginTop: 50}]}>Entrar</Text>
 
         <TextInput
           placeholder="Email"

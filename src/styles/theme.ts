@@ -83,6 +83,8 @@ export const styles_th = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     elevation: 4,
+    padding: 13,
+    borderRadius: 100,
   },
 
   buttonText: {
