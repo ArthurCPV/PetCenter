@@ -30,9 +30,46 @@ const CreatePetModal: React.FC<Props> = ({
   const [species, setSpecies] = useState("");
   const [breed, setBreed] = useState("");
   const [birthDate, setBirthDate] = useState("");
+  const [nameError, setNameError] = useState("");
+  const [speciesError, setSpeciesError] = useState("");
+  const [birthDateError, setBirthDateError] = useState("");
+
+  const validateDate = (formatted: string) => {
+    // Expecting dd/mm/yyyy when full
+    const digits = formatted.replace(/\D/g, "");
+    if (digits.length === 8) {
+      const day = Number(digits.slice(0, 2));
+      const month = Number(digits.slice(2, 4));
+      const year = Number(digits.slice(4, 8));
+      if (month < 1 || month > 12) return false;
+      if (day < 1 || day > 31) return false;
+      if (year < 1800 || year > 2100) return false;
+    }
+    return true;
+  };
 
   const handleCreate = () => {
-    if (!name.trim() || !species.trim()) return;
+    let hasError = false;
+    if (!name.trim()) {
+      setNameError("Por favor, preencha o nome do pet.");
+      hasError = true;
+    }
+    if (!species.trim()) {
+      setSpeciesError("Por favor, preencha a espécie.");
+      hasError = true;
+    }
+    if (birthDate) {
+      // if user typed letters they were blocked, but double-check
+      if (/[^0-9/]/.test(birthDate)) {
+        setBirthDateError("Apenas números são permitidos na data.");
+        hasError = true;
+      } else if (!validateDate(birthDate)) {
+        setBirthDateError("Data inválida. Use dd/mm/yyyy.");
+        hasError = true;
+      }
+    }
+
+    if (hasError) return;
 
     onCreate(name, species, breed, birthDate);
 
@@ -40,8 +77,34 @@ const CreatePetModal: React.FC<Props> = ({
     setSpecies("");
     setBreed("");
     setBirthDate("");
+    setNameError("");
+    setSpeciesError("");
+    setBirthDateError("");
 
     onClose();
+  };
+
+  const formatBirthDate = (text: string) => {
+    // If user tries to enter letters, show error and ignore them
+    if (/[A-Za-zÀ-ÿ]/.test(text)) {
+      setBirthDateError("Apenas números são permitidos na data.");
+      // remove letters
+      text = text.replace(/[A-Za-zÀ-ÿ]/g, "");
+    } else {
+      setBirthDateError("");
+    }
+
+    // Keep only digits
+    const digits = text.replace(/\D/g, "").slice(0, 8);
+
+    let formatted = digits;
+    if (digits.length > 4) {
+      formatted = `${digits.slice(0,2)}/${digits.slice(2,4)}/${digits.slice(4)}`;
+    } else if (digits.length > 2) {
+      formatted = `${digits.slice(0,2)}/${digits.slice(2)}`;
+    }
+
+    setBirthDate(formatted);
   };
 
   return (
@@ -100,8 +163,11 @@ const CreatePetModal: React.FC<Props> = ({
               },
             ]}
             value={name}
-            onChangeText={setName}
+            onChangeText={(t) => { setName(t); if (t.trim()) setNameError(""); }}
           />
+          {nameError ? (
+            <Text style={{ color: "#d9534f", marginTop: 6 }}>{nameError}</Text>
+          ) : null}
 
           <TextInput
             placeholder="Espécie *"
@@ -116,8 +182,11 @@ const CreatePetModal: React.FC<Props> = ({
               },
             ]}
             value={species}
-            onChangeText={setSpecies}
+            onChangeText={(t) => { setSpecies(t); if (t.trim()) setSpeciesError(""); }}
           />
+          {speciesError ? (
+            <Text style={{ color: "#d9534f", marginTop: 6 }}>{speciesError}</Text>
+          ) : null}
 
           <TextInput
             placeholder="Raça"
@@ -148,8 +217,12 @@ const CreatePetModal: React.FC<Props> = ({
               },
             ]}
             value={birthDate}
-            onChangeText={setBirthDate}
+            onChangeText={formatBirthDate}
+            keyboardType="numeric"
           />
+          {birthDateError ? (
+            <Text style={{ color: "#d9534f", marginTop: 6 }}>{birthDateError}</Text>
+          ) : null}
 
           {/* BOTÃO */}
           <TouchableOpacity

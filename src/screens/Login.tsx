@@ -5,6 +5,7 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { styles_th } from "../styles/theme";
 
@@ -57,6 +58,26 @@ const Login = ({ navigation }: any) => {
         >
           <Text style={{ color: "#fff", fontWeight: "bold" }}>
             Entrar
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles_th.button,
+            {
+              width: "100%",
+              marginLeft: 0,
+              marginTop: 14,
+              borderRadius: 18,
+              backgroundColor: "#999",
+            },
+          ]}
+          onPress={async () => {
+            await AsyncStorage.removeItem("PET_DIARIES");
+          }}
+        >
+          <Text style={{ color: "#fff", fontWeight: "bold" }}>
+            Resetar Dados
           </Text>
         </TouchableOpacity>
       </View>

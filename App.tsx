@@ -9,6 +9,7 @@ import AI from "./src/screens/AI";
 import Profile from "./src/screens/Profile";
 import Welcome from "./src/screens/Welcome";
 import Login from "./src/screens/Login";
+import PetDiary from "./src/screens/PetDiary";
 
 import { Image } from "react-native";
 import { colors } from "./src/styles/theme";
@@ -35,8 +36,9 @@ function Tabs() {
         tabBarLabelStyle: styles_gb.tabLabel,
 
         tabBarItemStyle: {
-          justifyContent: "center",
+          justifyContent: "flex-start",
           alignItems: "center",
+          paddingTop: 8,
         },
       }}
     >
@@ -118,6 +120,7 @@ export default function App() {
         <Stack.Screen name="Welcome" component={Welcome} />
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Home" component={Tabs} />
+        <Stack.Screen name="PetDiary" component={PetDiary} />
         <Stack.Screen name="Details" component={Details} />
       </Stack.Navigator>
     </NavigationContainer>

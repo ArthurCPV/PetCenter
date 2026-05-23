@@ -3,9 +3,9 @@ import {
   View,
   Text,
   FlatList,
-  Modal,
   TouchableOpacity,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 import { styles_th } from "../../styles/theme";
 import { styles_gb } from "../../styles/global";
@@ -14,26 +14,22 @@ import { useDiary } from "../../store/useDiary";
 
 import CreatePetModal from "../../components/CreatePetModal";
 import PetCard from "../../components/PetCard";
-import Form from "../../components/Form";
-import EntryCard from "../../components/EntryCard";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Diary = () => {
-  const { pets, addPet, addEntry } = useDiary();
-
-  const [selectedPet, setSelectedPet] = useState<any>(null);
-  const [selectedEntry, setSelectedEntry] = useState<any>(null);
+  const navigation = useNavigation<any>();
+  const { pets, addPet } = useDiary();
 
   // ✅ controle do modal
   const [modalVisible, setModalVisible] = useState(false);
+
 
   return (
     <View style={styles_th.screen}>
       {/* HEADER */}
       <View style={styles_gb.header}>
-        <Text style={[styles_th.title,{marginTop: 50}]}>PetCenter</Text>
+        <Text style={[styles_th.title,{marginTop: 65}]}>PetCenter</Text>
 
-        <Text style={styles_th.subtitle}>
+        <Text style={[styles_th.subtitle, {marginBottom: 30}]}>
           Diário inteligente do seu pet
         </Text>
       </View>
@@ -42,188 +38,50 @@ const Diary = () => {
       {/* LISTA DE DIÁRIOS */}
       {/* ========================================= */}
 
-      {!selectedPet ? (
-        <>
-          {/* BOTÃO DE ABRIR MODAL */}
-          <TouchableOpacity
-            style={[
-              styles_th.button,
-              styles_gb.fullButton
-            ]}
-            onPress={() => setModalVisible(true)}
-          >
-            <Text
-              style={{
-                color: "#fff",
-                fontWeight: "bold",
-                fontSize: 16,
-              }}
-            >
-              + Criar Diário
-            </Text>
-          </TouchableOpacity>
-
-          {/* MODAL */}
-          <CreatePetModal
-            visible={modalVisible}
-            onClose={() => setModalVisible(false)}
-            onCreate={addPet}
-          />
-
-          {/* LISTA DE PETS */}
-          <FlatList
-            data={pets}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <PetCard
-                pet={item}
-                onPress={() => setSelectedPet(item)}
-              />
-            )}
-            ListEmptyComponent={
-              <Text style={styles_th.emptyText}>
-                Nenhum diário criado ainda.
-              </Text>
-            }
-          />
-        </>
-      ) : (
-        <>
-          {/* VOLTAR */}
-          <TouchableOpacity
-            onPress={() => setSelectedPet(null)}
-            style={styles_gb.backButton}
-          >
-            <Text
-              style={{
-                color: "#E53935",
-                fontWeight: "600",
-              }}
-            >
-              ← Voltar
-            </Text>
-          </TouchableOpacity>
-
-          {/* TÍTULO */}
+      <>
+        {/* BOTÃO DE ABRIR MODAL */}
+        <TouchableOpacity
+          style={[
+            styles_th.button,
+            styles_gb.fullButton,
+          ]}
+          onPress={() => setModalVisible(true)}
+        >
           <Text
-            style={[
-              styles_th.sectionTitle,
-              {
-                fontSize: 20,
-              },
-            ]}
+            style={{
+              color: "#fff",
+              fontWeight: "bold",
+              fontSize: 16,
+            }}
           >
-            Diário de {selectedPet.name}
+            + Criar Diário
           </Text>
+        </TouchableOpacity>
 
-          {/* FORMULÁRIO */}
-          <Form
-            onSubmit={(text) =>
-              addEntry(selectedPet.id, text)
-            }
-          />
+        {/* MODAL */}
+        <CreatePetModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          onCreate={addPet}
+        />
 
-          {/* LISTA DE ENTRADAS */}
-          <FlatList
-            data={selectedPet.entries}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                onPress={() => setSelectedEntry(item)}
-              >
-                <EntryCard entry={item} />
-              </TouchableOpacity>
-            )}
-            ListEmptyComponent={
-              <Text style={styles_th.emptyText}>
-                Nenhum registro ainda.
-              </Text>
-            }
-          />
-
-          {/* MODAL DO REGISTRO */}
-          <Modal
-            visible={!!selectedEntry}
-            transparent
-            animationType="fade"
-          >
-            <View
-              style={{
-                flex: 1,
-                backgroundColor: "rgba(0,0,0,0.5)",
-                justifyContent: "center",
-                padding: 20,
-              }}
-            >
-              <View
-                style={{
-                  backgroundColor: "#fff",
-                  borderRadius: 20,
-                  padding: 20,
-                }}
-              >
-                <Text style={styles_th.title}>
-                  Registro do dia
-                </Text>
-
-                <Text
-                  style={{
-                    marginTop: 20,
-                    fontSize: 16,
-                    lineHeight: 24,
-                  }}
-                >
-                  {selectedEntry?.title}
-                </Text>
-
-                <Text
-                  style={{
-                    marginTop: 15,
-                    color: "#777",
-                  }}
-                >
-                  {selectedEntry?.createdAt
-                    ? new Date(
-                        selectedEntry.createdAt
-                      ).toLocaleString()
-                    : ""}
-                </Text>
-
-                <TouchableOpacity
-                  style={[
-                    styles_th.button,
-                    {
-                      width: "100%",
-                      marginLeft: 0,
-                      marginTop: 20,
-                      borderRadius: 16,
-                    },
-                  ]}
-                  onPress={() => setSelectedEntry(null)}
-                >
-                  <Text
-                    style={{
-                      color: "#fff",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    Fechar
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={async () => {
-                    await AsyncStorage.removeItem("PET_DIARIES");
-                    location.reload();
-                  }}
-                >
-                <Text>Resetar Dados</Text>
-              </TouchableOpacity>
-              </View>
-            </View>
-          </Modal>
-        </>
-      )}
+        {/* LISTA DE PETS */}
+        <FlatList
+          data={pets}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <PetCard
+              pet={item}
+              onPress={() => navigation.navigate("PetDiary", { petId: item.id })}
+            />
+          )}
+          ListEmptyComponent={
+            <Text style={styles_th.emptyText}>
+              Nenhum diário criado ainda.
+            </Text>
+          }
+        />
+      </>
     </View>
   );
 };

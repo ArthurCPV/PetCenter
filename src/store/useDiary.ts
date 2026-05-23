@@ -46,14 +46,27 @@ export const useDiary = () => {
     savePets(updated);
   };
 
-  const addEntry = (petId: string, text: string) => {
+  const addEntry = (
+    petId: string,
+    title: string,
+    petAte?: string,
+    whatAte?: string,
+    petSlept?: string,
+    observations?: string,
+    concerns?: string
+  ) => {
     const updated = pets.map((pet) => {
       if (pet.id !== petId) return pet;
 
       const newEntry: DiaryEntry = {
         id: String(Date.now()),
-        title: text,
+        title,
         createdAt: new Date(),
+        petAte,
+        whatAte,
+        petSlept,
+        observations,
+        concerns,
       };
 
       return {
