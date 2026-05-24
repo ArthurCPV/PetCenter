@@ -3,7 +3,6 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createStackNavigator } from "@react-navigation/stack";
 
 import Diary from "./src/screens/Diary";
-import Details from "./src/screens/Details";
 import Alerts from "./src/screens/Alerts";
 import AI from "./src/screens/AI";
 import Profile from "./src/screens/Profile";
@@ -121,7 +120,6 @@ export default function App() {
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Home" component={Tabs} />
         <Stack.Screen name="PetDiary" component={PetDiary} />
-        <Stack.Screen name="Details" component={Details} />
       </Stack.Navigator>
     </NavigationContainer>
   );
