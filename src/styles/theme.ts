@@ -72,6 +72,8 @@ export const styles_th = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     paddingHorizontal: 16,
+    paddingVertical: 10,
+    minHeight: 44,
     color: colors.text,
     fontSize: 15,
   },

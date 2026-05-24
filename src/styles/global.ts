@@ -148,11 +148,13 @@ export const styles_gb = StyleSheet.create({
     padding: 20,
   },
 
-  modalContainer: {
-    backgroundColor: "#fff",
-    borderRadius: 24,
-    padding: 20,
-  },
+modalContainer: {
+  backgroundColor: "#fff",
+  borderRadius: 24,
+  padding: 20,
+  maxHeight: "90%",
+  alignSelf: "stretch",
+},
 
   /* TAB BAR */
 
