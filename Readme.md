@@ -312,9 +312,13 @@ Atualmente essas telas simulam funcionalidades futuras com interações visuais 
 
 ## 👥 Integrantes
 
-| Nome | GitHub | LinkedIn | RM |
-|------|--------|----------|----|
-| Arthur Cabral | [ArthurCPV](https://github.com/ArthurCPV) | [Arthur LinkedIn](https://www.linkedin.com/in/arthur-cabral2101/) | 566515 |
+| Nome | GitHub | RM |
+|------|--------|----|
+| Arthur Cabral | [ArthurCPV](https://github.com/ArthurCPV) | 566515 |
+| Bruno Martins | [TaikaWaititi](https://github.com/TaikaWaititi) | 564939 |
+| José Diogo | [ZeDio](https://github.com/ZeDio) | 562341 |
+| Júlia Tiziotto | [JuliaTButtler](https://github.com/JuliaTButtler) | 564975 |
+| Mariana Xavier | [Marixavq](https://github.com/Marixavq) | 566357 |
 
 ---
 
@@ -339,10 +343,10 @@ Atualmente essas telas simulam funcionalidades futuras com interações visuais 
 ## 📁 Acesso ao Projeto
 
 ### 🖥️ Repositório GitHub
-- Adicionar link do GitHub Classroom aqui
+[Repositório PetCenter](https://github.com/FIAP-MOBILE/clyvo-challenge-petcenter.git)
 
 ### 🎬 Vídeo Demonstrativo
-- Adicionar link do YouTube aqui
+[Vídeo demonstrativo - PetCenter](https://youtu.be/2Som2J4x0YI)
 
 ---
 
