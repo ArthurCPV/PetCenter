@@ -1,6 +1,8 @@
 import React from "react";
 import { View, Text } from "react-native";
+
 import { styles_th } from "../styles/theme";
+
 import { DiaryEntry } from "../types";
 
 type Props = {

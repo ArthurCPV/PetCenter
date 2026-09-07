@@ -1,8 +1,25 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Image } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Image,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+
 import { styles_th } from "../styles/theme";
 
-const Welcome = ({ navigation }: any) => {
+import { HomeStack } from "../types/navigation";
+
+type NavigationProp = NativeStackNavigationProp<
+  HomeStack,
+  "Welcome"
+>;
+
+const Welcome = () => {
+  const navigation = useNavigation<NavigationProp>();
+
   return (
     <View
       style={[
@@ -56,7 +73,9 @@ const Welcome = ({ navigation }: any) => {
             marginTop: 50,
           },
         ]}
-        onPress={() => navigation.navigate("Login")}
+        onPress={() =>
+          navigation.navigate("Login")
+        }
       >
         <Text
           style={{

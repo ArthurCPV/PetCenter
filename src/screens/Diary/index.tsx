@@ -10,20 +10,29 @@ import {
 import { styles_th } from "../../styles/theme";
 import { useDiary } from "../../store/useDiary";
 
+import { DiaryEntry, PetDiary } from "../../types";
+
 import CreatePetModal from "../../components/CreatePetModal";
 import PetCard from "../../components/PetCard";
 import Form from "../../components/Form";
 import EntryCard from "../../components/EntryCard";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Diary = () => {
-  const { pets, addPet, addEntry } = useDiary();
+  const {
+    pets,
+    addPet,
+    addEntry,
+    clearPets,
+  } = useDiary();
 
-  const [selectedPet, setSelectedPet] = useState<any>(null);
-  const [selectedEntry, setSelectedEntry] = useState<any>(null);
+  const [selectedPet, setSelectedPet] =
+    useState<PetDiary | undefined>(undefined);
 
-  // ✅ controle do modal
-  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedEntry, setSelectedEntry] =
+    useState<DiaryEntry | undefined>(undefined);
+
+  const [modalVisible, setModalVisible] =
+    useState(false);
 
   return (
     <View style={styles_th.container}>
@@ -95,7 +104,9 @@ const Diary = () => {
         <>
           {/* VOLTAR */}
           <TouchableOpacity
-            onPress={() => setSelectedPet(null)}
+            onPress={() =>
+              setSelectedPet(undefined)
+            }
             style={{
               marginLeft: 20,
               marginBottom: 10,
@@ -136,7 +147,9 @@ const Diary = () => {
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
               <TouchableOpacity
-                onPress={() => setSelectedEntry(item)}
+                onPress={() =>
+                  setSelectedEntry(item)
+                }
               >
                 <EntryCard entry={item} />
               </TouchableOpacity>
@@ -150,7 +163,7 @@ const Diary = () => {
 
           {/* MODAL DO REGISTRO */}
           <Modal
-            visible={!!selectedEntry}
+            visible={selectedEntry !== undefined}
             transparent
             animationType="fade"
           >
@@ -191,8 +204,8 @@ const Diary = () => {
                 >
                   {selectedEntry?.createdAt
                     ? new Date(
-                        selectedEntry.createdAt
-                      ).toLocaleString()
+                      selectedEntry.createdAt
+                    ).toLocaleString()
                     : ""}
                 </Text>
 
@@ -206,7 +219,9 @@ const Diary = () => {
                       borderRadius: 16,
                     },
                   ]}
-                  onPress={() => setSelectedEntry(null)}
+                  onPress={() =>
+                    setSelectedEntry(undefined)
+                  }
                 >
                   <Text
                     style={{
@@ -219,13 +234,14 @@ const Diary = () => {
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  onPress={async () => {
-                    await AsyncStorage.removeItem("PET_DIARIES");
-                    location.reload();
+                  onPress={() => {
+                    void clearPets();
+                    setSelectedPet(undefined);
+                    setSelectedEntry(undefined);
                   }}
                 >
-                <Text>Resetar Dados</Text>
-              </TouchableOpacity>
+                  <Text>Resetar Dados</Text>
+                </TouchableOpacity>
               </View>
             </View>
           </Modal>

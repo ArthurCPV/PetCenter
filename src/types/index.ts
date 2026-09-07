@@ -10,6 +10,12 @@ export type PetDiary = {
   species: string;
   breed?: string;
   birthDate?: string;
-
   entries: DiaryEntry[];
+};
+
+export type CreatePetData = {
+  name: string;
+  species: string;
+  breed?: string;
+  birthDate?: string;
 };

@@ -1,5 +1,6 @@
 // src/styles/global.ts
 import { StyleSheet } from "react-native";
+
 import { colors } from "./theme";
 
 export const styles_gb = StyleSheet.create({
@@ -9,7 +10,7 @@ export const styles_gb = StyleSheet.create({
     paddingTop: 50,
   },
 
-    center: {
+  center: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",

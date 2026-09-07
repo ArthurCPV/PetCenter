@@ -1,10 +1,21 @@
 import React from "react";
 import { TouchableOpacity, Text, View } from "react-native";
+
 import { styles_th } from "../styles/theme";
 
-const PetCard = ({ pet, onPress }: any) => {
+import { PetDiary } from "../types";
+
+type Props = {
+  pet: PetDiary;
+  onPress: () => void;
+};
+
+const PetCard: React.FC<Props> = ({ pet, onPress }) => {
   return (
-    <TouchableOpacity style={styles_th.item} onPress={onPress}>
+    <TouchableOpacity
+      style={styles_th.item}
+      onPress={onPress}
+    >
       <Text style={styles_th.itemTitle}>{pet.name}</Text>
 
       <View
@@ -19,7 +30,8 @@ const PetCard = ({ pet, onPress }: any) => {
 
         {pet.breed && (
           <Text style={styles_th.itemDate}>
-            {" • "}{pet.breed}
+            {" • "}
+            {pet.breed}
           </Text>
         )}
       </View>

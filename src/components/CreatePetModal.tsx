@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Modal,
   View,
@@ -9,26 +9,39 @@ import {
 
 import { styles_th } from "../styles/theme";
 
+import type { CreatePetData } from "../types";
+
 type Props = {
   visible: boolean;
   onClose: () => void;
-  onCreate: (
-    name: string,
-    species: string,
-    breed?: string,
-    birthDate?: string
-  ) => void;
+  onCreate: (data: CreatePetData) => void;
 };
 
-const CreatePetModal: React.FC<Props> = ({
+const CreatePetModal = ({
   visible,
   onClose,
   onCreate,
-}) => {
+}: Props) => {
   const [name, setName] = useState("");
   const [species, setSpecies] = useState("");
   const [breed, setBreed] = useState("");
   const [birthDate, setBirthDate] = useState("");
+
+  const handleCreate = () => {
+    onCreate({
+      name,
+      species,
+      breed: breed.trim() || undefined,
+      birthDate: birthDate.trim() || undefined,
+    });
+
+    setName("");
+    setSpecies("");
+    setBreed("");
+    setBirthDate("");
+
+    onClose();
+  };
 
   return (
     <Modal visible={visible} transparent animationType="fade">
@@ -51,28 +64,60 @@ const CreatePetModal: React.FC<Props> = ({
 
           <TextInput
             placeholder="Nome do pet"
-            style={[styles_th.input, { marginTop: 20, height: 60, flex: 0, paddingHorizontal: 15 }]}
+            style={[
+              styles_th.input,
+              {
+                marginTop: 20,
+                height: 60,
+                flex: 0,
+                paddingHorizontal: 15,
+              },
+            ]}
             value={name}
             onChangeText={setName}
           />
 
           <TextInput
             placeholder="Espécie"
-            style={[styles_th.input, { marginTop: 10, height: 60, flex: 0, paddingHorizontal: 15 }]}
+            style={[
+              styles_th.input,
+              {
+                marginTop: 10,
+                height: 60,
+                flex: 0,
+                paddingHorizontal: 15,
+              },
+            ]}
             value={species}
             onChangeText={setSpecies}
           />
 
           <TextInput
             placeholder="Raça"
-            style={[styles_th.input, { marginTop: 10, height: 60, flex: 0, paddingHorizontal: 15 }]}
+            style={[
+              styles_th.input,
+              {
+                marginTop: 10,
+                height: 60,
+                flex: 0,
+                paddingHorizontal: 15,
+              },
+            ]}
             value={breed}
             onChangeText={setBreed}
           />
 
           <TextInput
             placeholder="Data de nascimento"
-            style={[styles_th.input, { marginTop: 10, height: 60, flex: 0, paddingHorizontal: 15 }]}
+            style={[
+              styles_th.input,
+              {
+                marginTop: 10,
+                height: 60,
+                flex: 0,
+                paddingHorizontal: 15,
+              },
+            ]}
             value={birthDate}
             onChangeText={setBirthDate}
           />
@@ -87,18 +132,14 @@ const CreatePetModal: React.FC<Props> = ({
                 borderRadius: 16,
               },
             ]}
-            onPress={() => {
-              onCreate(name, species, breed, birthDate);
-
-              setName("");
-              setSpecies("");
-              setBreed("");
-              setBirthDate("");
-
-              onClose();
-            }}
+            onPress={handleCreate}
           >
-            <Text style={{ color: "#fff", fontWeight: "bold" }}>
+            <Text
+              style={{
+                color: "#fff",
+                fontWeight: "bold",
+              }}
+            >
               Criar Diário
             </Text>
           </TouchableOpacity>

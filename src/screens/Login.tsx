@@ -5,14 +5,27 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import { styles_th } from "../styles/theme";
 
-const Login = ({ navigation }: any) => {
+import { HomeStack } from "../types/navigation";
+
+type NavigationProp = NativeStackNavigationProp<
+  HomeStack,
+  "Login"
+>;
+
+const Login = () => {
+  const navigation = useNavigation<NavigationProp>();
+
   return (
     <View style={styles_th.container}>
       <View style={{ padding: 25 }}>
-        <Text style={styles_th.title}>Entrar</Text>
+        <Text style={styles_th.title}>
+          Entrar
+        </Text>
 
         <TextInput
           placeholder="Email"
@@ -55,7 +68,12 @@ const Login = ({ navigation }: any) => {
           ]}
           onPress={() => navigation.navigate("Home")}
         >
-          <Text style={{ color: "#fff", fontWeight: "bold" }}>
+          <Text
+            style={{
+              color: "#fff",
+              fontWeight: "bold",
+            }}
+          >
             Entrar
           </Text>
         </TouchableOpacity>

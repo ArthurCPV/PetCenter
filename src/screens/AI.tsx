@@ -1,4 +1,5 @@
 import { View, Text } from "react-native";
+
 import { styles_gb } from "../styles/global";
 
 const AI = () => {
