@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -10,48 +10,123 @@ import {
 import { styles_th } from "../../styles/theme";
 import { useDiary } from "../../store/useDiary";
 
-import { DiaryEntry, PetDiary } from "../../types";
+import {
+  DiaryEntry,
+  PetDiary,
+} from "../../types";
 
 import CreatePetModal from "../../components/CreatePetModal";
 import PetCard from "../../components/PetCard";
 import Form from "../../components/Form";
 import EntryCard from "../../components/EntryCard";
 
+const isSameDay = (
+  dateA: Date,
+  dateB: Date,
+): boolean => {
+  return (
+    dateA.getFullYear() === dateB.getFullYear() &&
+    dateA.getMonth() === dateB.getMonth() &&
+    dateA.getDate() === dateB.getDate()
+  );
+};
+
+const getEntryTitle = (
+  createdAt: Date,
+): string => {
+  const today = new Date();
+
+  if (isSameDay(createdAt, today)) {
+    return "Registro de hoje";
+  }
+
+  const yesterday = new Date();
+  yesterday.setDate(
+    yesterday.getDate() - 1,
+  );
+
+  if (isSameDay(createdAt, yesterday)) {
+    return "Registro de ontem";
+  }
+
+  return `Registro de ${createdAt.toLocaleDateString()}`;
+};
+
 const Diary = () => {
   const {
     pets,
     addPet,
     addEntry,
-    clearPets,
+    updateEntry,
   } = useDiary();
 
-  const [selectedPet, setSelectedPet] =
-    useState<PetDiary | undefined>(undefined);
+  const [selectedPetId, setSelectedPetId] =
+    useState<string | undefined>(undefined);
 
   const [selectedEntry, setSelectedEntry] =
-    useState<DiaryEntry | undefined>(undefined);
+    useState<DiaryEntry | undefined>(
+      undefined,
+    );
 
   const [modalVisible, setModalVisible] =
     useState(false);
+
+  const selectedPet: PetDiary | undefined =
+    useMemo(
+      () =>
+        pets.find(
+          (pet) => pet.id === selectedPetId,
+        ),
+      [pets, selectedPetId],
+    );
+
+  const todayEntry =
+    selectedPet?.entries.find((entry) =>
+      isSameDay(
+        new Date(entry.createdAt),
+        new Date(),
+      ),
+    );
+
+  const handleEntrySubmit = (
+    text: string,
+  ) => {
+    if (!selectedPet) {
+      return;
+    }
+
+    if (todayEntry) {
+      updateEntry(
+        selectedPet.id,
+        todayEntry.id,
+        text,
+      );
+
+      return;
+    }
+
+    addEntry(
+      selectedPet.id,
+      text,
+    );
+  };
 
   return (
     <View style={styles_th.container}>
       {/* HEADER */}
       <View style={styles_th.header}>
-        <Text style={styles_th.title}>PetCenter</Text>
+        <Text style={styles_th.title}>
+          PetCenter
+        </Text>
 
         <Text style={styles_th.subtitle}>
           Diário inteligente do seu pet
         </Text>
       </View>
 
-      {/* ========================================= */}
-      {/* LISTA DE DIÁRIOS */}
-      {/* ========================================= */}
-
       {!selectedPet ? (
         <>
-          {/* BOTÃO DE ABRIR MODAL */}
+          {/* BOTÃO DE CRIAR DIÁRIO */}
           <TouchableOpacity
             style={[
               styles_th.button,
@@ -63,7 +138,9 @@ const Diary = () => {
                 marginLeft: 0,
               },
             ]}
-            onPress={() => setModalVisible(true)}
+            onPress={() =>
+              setModalVisible(true)
+            }
           >
             <Text
               style={{
@@ -76,10 +153,12 @@ const Diary = () => {
             </Text>
           </TouchableOpacity>
 
-          {/* MODAL */}
+          {/* MODAL DE CRIAÇÃO */}
           <CreatePetModal
             visible={modalVisible}
-            onClose={() => setModalVisible(false)}
+            onClose={() =>
+              setModalVisible(false)
+            }
             onCreate={addPet}
           />
 
@@ -90,11 +169,17 @@ const Diary = () => {
             renderItem={({ item }) => (
               <PetCard
                 pet={item}
-                onPress={() => setSelectedPet(item)}
+                onPress={() =>
+                  setSelectedPetId(
+                    item.id,
+                  )
+                }
               />
             )}
             ListEmptyComponent={
-              <Text style={styles_th.emptyText}>
+              <Text
+                style={styles_th.emptyText}
+              >
                 Nenhum diário criado ainda ✨
               </Text>
             }
@@ -105,7 +190,9 @@ const Diary = () => {
           {/* VOLTAR */}
           <TouchableOpacity
             onPress={() =>
-              setSelectedPet(undefined)
+              setSelectedPetId(
+                undefined,
+              )
             }
             style={{
               marginLeft: 20,
@@ -136,26 +223,38 @@ const Diary = () => {
 
           {/* FORMULÁRIO */}
           <Form
-            onSubmit={(text) =>
-              addEntry(selectedPet.id, text)
+            initialText={
+              todayEntry?.title ?? ""
+            }
+            hasTodayEntry={
+              todayEntry !== undefined
+            }
+            onSubmit={
+              handleEntrySubmit
             }
           />
 
           {/* LISTA DE ENTRADAS */}
           <FlatList
             data={selectedPet.entries}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) =>
+              item.id
+            }
             renderItem={({ item }) => (
               <TouchableOpacity
                 onPress={() =>
                   setSelectedEntry(item)
                 }
               >
-                <EntryCard entry={item} />
+                <EntryCard
+                  entry={item}
+                />
               </TouchableOpacity>
             )}
             ListEmptyComponent={
-              <Text style={styles_th.emptyText}>
+              <Text
+                style={styles_th.emptyText}
+              >
                 Nenhum registro ainda.
               </Text>
             }
@@ -163,15 +262,25 @@ const Diary = () => {
 
           {/* MODAL DO REGISTRO */}
           <Modal
-            visible={selectedEntry !== undefined}
+            visible={
+              selectedEntry !==
+              undefined
+            }
             transparent
             animationType="fade"
+            onRequestClose={() =>
+              setSelectedEntry(
+                undefined,
+              )
+            }
           >
             <View
               style={{
                 flex: 1,
-                backgroundColor: "rgba(0,0,0,0.5)",
-                justifyContent: "center",
+                backgroundColor:
+                  "rgba(0,0,0,0.5)",
+                justifyContent:
+                  "center",
                 padding: 20,
               }}
             >
@@ -182,8 +291,16 @@ const Diary = () => {
                   padding: 20,
                 }}
               >
-                <Text style={styles_th.title}>
-                  Registro do dia
+                <Text
+                  style={styles_th.title}
+                >
+                  {selectedEntry
+                    ? getEntryTitle(
+                      new Date(
+                        selectedEntry.createdAt,
+                      ),
+                    )
+                    : "Registro"}
                 </Text>
 
                 <Text
@@ -202,9 +319,9 @@ const Diary = () => {
                     color: "#777",
                   }}
                 >
-                  {selectedEntry?.createdAt
+                  {selectedEntry
                     ? new Date(
-                      selectedEntry.createdAt
+                      selectedEntry.createdAt,
                     ).toLocaleString()
                     : ""}
                 </Text>
@@ -220,7 +337,9 @@ const Diary = () => {
                     },
                   ]}
                   onPress={() =>
-                    setSelectedEntry(undefined)
+                    setSelectedEntry(
+                      undefined,
+                    )
                   }
                 >
                   <Text
@@ -231,16 +350,6 @@ const Diary = () => {
                   >
                     Fechar
                   </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={() => {
-                    void clearPets();
-                    setSelectedPet(undefined);
-                    setSelectedEntry(undefined);
-                  }}
-                >
-                  <Text>Resetar Dados</Text>
                 </TouchableOpacity>
               </View>
             </View>

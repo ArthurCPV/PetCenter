@@ -23,17 +23,17 @@ export const styles_th = StyleSheet.create({
   },
 
   headerRow: {
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "center",
-  gap: 8,
-},
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
 
-logo: {
-  width: 32,
-  height: 32,
-  resizeMode: "contain",
-},
+  logo: {
+    width: 32,
+    height: 32,
+    resizeMode: "contain",
+  },
 
   title: {
     fontSize: 26,

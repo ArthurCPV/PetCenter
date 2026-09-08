@@ -16,4 +16,4 @@ type TabsStack = {
   Profile: undefined;
 };
 
-export { type HomeStack, type TabsStack };
+export type { HomeStack, TabsStack };

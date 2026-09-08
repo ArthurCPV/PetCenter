@@ -8,17 +8,73 @@ import { styles_gb } from "../styles/global";
 
 import { HomeStack } from "../types/navigation";
 
-type DetailsRouteProp = RouteProp<HomeStack, "Details">;
+type DetailsRouteProp =
+  RouteProp<HomeStack, "Details">;
+
+const isSameDay = (
+  firstDate: Date,
+  secondDate: Date,
+): boolean => {
+  return (
+    firstDate.getFullYear() === secondDate.getFullYear() &&
+    firstDate.getMonth() === secondDate.getMonth() &&
+    firstDate.getDate() === secondDate.getDate()
+  );
+};
+
+const getEntryTitle = (
+  entryDate: Date,
+): string => {
+  const today = new Date();
+
+  if (isSameDay(entryDate, today)) {
+    return "Registro de hoje";
+  }
+
+  const yesterday = new Date(today);
+
+  yesterday.setDate(
+    today.getDate() - 1,
+  );
+
+  if (isSameDay(entryDate, yesterday)) {
+    return "Registro de ontem";
+  }
+
+  const dayBeforeYesterday =
+    new Date(today);
+
+  dayBeforeYesterday.setDate(
+    today.getDate() - 2,
+  );
+
+  if (
+    isSameDay(
+      entryDate,
+      dayBeforeYesterday,
+    )
+  ) {
+    return "Registro de anteontem";
+  }
+
+  return `Registro de ${entryDate.toLocaleDateString(
+    "pt-BR",
+  )}`;
+};
 
 const Details = () => {
-  const route = useRoute<DetailsRouteProp>();
+  const route =
+    useRoute<DetailsRouteProp>();
 
   const { entry } = route.params;
+
+  const entryDate =
+    new Date(entry.createdAt);
 
   return (
     <View style={styles_gb.container}>
       <Text style={styles_gb.title}>
-        Detalhes
+        {getEntryTitle(entryDate)}
       </Text>
 
       <Text style={styles_gb.itemTitle}>
@@ -26,7 +82,7 @@ const Details = () => {
       </Text>
 
       <Text style={styles_gb.itemDate}>
-        {new Date(entry.createdAt).toLocaleString()}
+        {entryDate.toLocaleString()}
       </Text>
     </View>
   );

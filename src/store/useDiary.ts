@@ -152,9 +152,34 @@ export const useDiary = () => {
     );
   };
 
+  const updateEntry = (petId: string, entryId: string, text: string) => {
+    setPets((currentPets) =>
+      currentPets.map((pet) => {
+        if (pet.id !== petId) {
+          return pet;
+        }
+
+        return {
+          ...pet,
+          entries: pet.entries.map((entry) => {
+            if (entry.id !== entryId) {
+              return entry;
+            }
+
+            return {
+              ...entry,
+              title: text,
+            };
+          }),
+        };
+      }),
+    );
+  };
+
   const clearPets = async () => {
     try {
       await AsyncStorage.removeItem(STORAGE_KEY);
+
       setPets([]);
     } catch (error) {
       console.error("Erro ao limpar os pets:", error);
@@ -165,6 +190,7 @@ export const useDiary = () => {
     pets,
     addPet,
     addEntry,
+    updateEntry,
     clearPets,
   };
 };
