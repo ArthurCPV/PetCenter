@@ -1,43 +1,8 @@
-import type { CreatePetData, PetDiary } from "../types";
-import type { ApiPet, ApiPetRequest } from "../types/api";
 import { request } from "./api";
+import type { PetDiary } from "../types";
+import type { ApiPage, ApiPetRequest, ApiPetResponse } from "../types/api";
 
-const parseBirthDate = (value: string | undefined): string | undefined => {
-  if (!value || value === "Data de nascimento desconhecida") {
-    return undefined;
-  }
-
-  const match = value.match(/^(\\d{2})\\/(\\d{2})\\/(\\d{4})$/);
-
-  if (!match) {
-    return undefined;
-  }
-
-  const [, day, month, year] = match;
-  return `${year}-${month}-${day}`;
-};
-
-const toApiPetRequest = (data: CreatePetData): ApiPetRequest => {
-  const requestData: ApiPetRequest = {
-    nome: data.name,
-    especie: data.species,
-  };
-
-  const breed = data.breed?.trim();
-  const birthDate = parseBirthDate(data.birthDate);
-
-  if (breed) {
-    requestData.raca = breed;
-  }
-
-  if (birthDate) {
-    requestData.dataNascimento = birthDate;
-  }
-
-  return requestData;
-};
-
-export const mapApiPetToPetDiary = (pet: ApiPet): PetDiary => ({
+const toPet = (pet: ApiPetResponse): PetDiary => ({
   id: String(pet.id),
   name: pet.nome,
   species: pet.especie,
@@ -46,73 +11,62 @@ export const mapApiPetToPetDiary = (pet: ApiPet): PetDiary => ({
   entries: [],
 });
 
-export const getPets = async (): Promise<PetDiary[]> => {
-  const response = await request<unknown>("/api/pets");
+const toPetRequest = (pet: Parameters<typeof createPet>[0]): ApiPetRequest => ({
+  nome: pet.name,
+  especie: pet.species,
+  raca: pet.breed,
+  dataNascimento:
+    pet.birthDate && /^\d{4}-\d{2}-\d{2}$/.test(pet.birthDate)
+      ? pet.birthDate
+      : undefined,
+});
 
-  if (Array.isArray(response)) {
-    return response.map((pet) => mapApiPetToPetDiary(pet as ApiPet));
-  }
+export const createPet = async (data: {
+  name: string;
+  species: string;
+  breed?: string;
+  birthDate?: string;
+}): Promise<PetDiary> => {
+  const response = await request<ApiPetResponse>("/api/pets", {
+    method: "POST",
+    body: JSON.stringify(toPetRequest(data)),
+  });
 
-  if (
-    typeof response === "object" &&
-    response !== null &&
-    "content" in response &&
-    Array.isArray(response.content)
-  ) {
-    return response.content.map((pet) =>
-      mapApiPetToPetDiary(pet as ApiPet),
-    );
-  }
-
-  return [];
+  return toPet(response);
 };
 
-export const createPet = async (
-  data: CreatePetData,
-): Promise<PetDiary> => {
-  const response = await request<ApiPet>(
-    "/api/pets",
-    {
-      method: "POST",
-      body: toApiPetRequest(data),
-    },
+export const listPets = async (): Promise<PetDiary[]> => {
+  const response = await request<ApiPage<ApiPetResponse>>(
+    "/api/pets?size=100",
   );
 
-  return mapApiPetToPetDiary(response);
+  return response.content.map(toPet);
 };
 
-export const getPet = async (
-  petId: string,
-): Promise<PetDiary> => {
-  const response = await request<ApiPet>(
-    `/api/pets/${petId}`,
-  );
-
-  return mapApiPetToPetDiary(response);
+export const getPet = async (id: string): Promise<PetDiary> => {
+  const response = await request<ApiPetResponse>(`/api/pets/${id}`);
+  return toPet(response);
 };
 
 export const updatePet = async (
-  petId: string,
-  data: CreatePetData,
+  id: string,
+  data: {
+    name: string;
+    species: string;
+    breed?: string;
+    birthDate?: string;
+  },
 ): Promise<PetDiary> => {
-  const response = await request<ApiPet>(
-    `/api/pets/${petId}`,
-    {
-      method: "PUT",
-      body: toApiPetRequest(data),
-    },
-  );
+  const response = await request<ApiPetResponse>(`/api/pets/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(toPetRequest(data)),
+  });
 
-  return mapApiPetToPetDiary(response);
+  return toPet(response);
 };
 
-export const deletePet = async (
-  petId: string,
-): Promise<void> => {
-  await request<void>(
-    `/api/pets/${petId}`,
-    {
-      method: "DELETE",
-    },
-  );
+export const deletePet = async (id: string): Promise<void> => {
+  await request<void>(`/api/pets/${id}`, {
+    method: "DELETE",
+  });
 };

@@ -16,6 +16,7 @@ import AI from "../screens/AI";
 import Profile from "../screens/Profile";
 import Welcome from "../screens/Welcome";
 import Login from "../screens/Login";
+import Register from "../screens/Register";
 
 
 const Stack = createNativeStackNavigator<HomeStack>();
@@ -127,6 +128,11 @@ const Home = () => {
             <Stack.Screen
                 name="Login"
                 component={Login}
+            />
+
+            <Stack.Screen
+                name="Register"
+                component={Register}
             />
 
             <Stack.Screen

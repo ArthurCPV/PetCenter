@@ -1,20 +1,18 @@
-export type LoginRequest = {
+export type ApiLoginRequest = {
   email: string;
   senha: string;
 };
 
-export type LoginResponse = {
+export type ApiLoginResponse = {
   token: string;
 };
 
-export type ApiPet = {
-  id: number;
-  nomeTutor: string;
+export type ApiUserRequest = {
   nome: string;
-  especie: string;
-  raca?: string;
-  dataNascimento?: string;
-  observacoes?: string;
+  email: string;
+  senha: string;
+  telefone: string;
+  tipoUsuario: "TUTOR" | "VETERINARIO";
 };
 
 export type ApiPetRequest = {
@@ -25,7 +23,25 @@ export type ApiPetRequest = {
   observacoes?: string;
 };
 
-export type ApiDiaryEntry = {
+export type ApiPetResponse = {
+  id: number;
+  nomeTutor: string;
+  nome: string;
+  especie: string;
+  raca?: string;
+  dataNascimento?: string;
+  observacoes?: string;
+};
+
+export type ApiDiaryRequest = {
+  petId: number;
+  data: string;
+  resumo?: string;
+  humorGeral?: string;
+  status: string;
+};
+
+export type ApiDiaryResponse = {
   id: number;
   idPet: number;
   nomePet: string;
@@ -37,20 +53,24 @@ export type ApiDiaryEntry = {
   atualizadoEm?: string;
 };
 
-export type ApiDiaryEntryRequest = {
-  petId: number;
-  data: string;
-  resumo?: string;
-  humorGeral?: string;
-  status: string;
+export type ApiVeterinarianRequest = {
+  crmv: string;
+  especialidade: string;
+  descricao?: string;
+};
+
+export type ApiVeterinarianResponse = {
+  id: number;
+  nomeVeterinario: string;
+  crmv: string;
+  especialidade: string;
+  descricao?: string;
 };
 
 export type ApiPage<T> = {
   content: T[];
-  number: number;
-  size: number;
   totalElements: number;
   totalPages: number;
-  first: boolean;
-  last: boolean;
+  size: number;
+  number: number;
 };

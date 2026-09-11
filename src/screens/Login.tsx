@@ -77,6 +77,35 @@ const Login = () => {
             Entrar
           </Text>
         </TouchableOpacity>
+
+        <View
+          style={{
+            alignItems: "center",
+            marginTop: 25,
+          }}
+        >
+          <Text
+            style={{
+              color: "#666",
+              marginBottom: 8,
+            }}
+          >
+            Ainda não possui uma conta?
+          </Text>
+
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Register")}
+          >
+            <Text
+              style={{
+                color: "#E53935",
+                fontWeight: "bold",
+              }}
+            >
+              Criar uma conta
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );

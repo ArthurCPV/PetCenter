@@ -3,6 +3,7 @@ import type { DiaryEntry } from "./index";
 type HomeStack = {
   Welcome: undefined;
   Login: undefined;
+  Register: undefined;
   Home: undefined;
   Details: {
     entry: DiaryEntry;

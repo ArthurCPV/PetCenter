@@ -1,83 +1,76 @@
-import type { DiaryEntry } from "../types";
-import type {
-  ApiDiaryEntry,
-  ApiDiaryEntryRequest,
-  ApiPage,
-} from "../types/api";
 import { request } from "./api";
+import type { DiaryEntry } from "../types";
+import type { ApiDiaryRequest, ApiDiaryResponse, ApiPage } from "../types/api";
 
-const toFrontendEntry = (entry: ApiDiaryEntry): DiaryEntry => ({
+const toDiaryEntry = (entry: ApiDiaryResponse): DiaryEntry => ({
   id: String(entry.id),
   title: entry.resumo ?? "",
   createdAt: new Date(entry.criadoEm),
 });
 
-const toApiEntryRequest = (
+const getToday = (): string => {
+  return new Date().toISOString().slice(0, 10);
+};
+
+export const listDiaryEntries = async (): Promise<ApiDiaryResponse[]> => {
+  const response = await request<ApiPage<ApiDiaryResponse>>(
+    "/api/diarioentradas?size=100",
+  );
+
+  return response.content;
+};
+
+export const listDiaryEntriesByPet = async (
   petId: string,
-  text: string,
-  date: Date,
-): ApiDiaryEntryRequest => ({
-  petId: Number(petId),
-  data: date.toISOString().slice(0, 10),
-  resumo: text,
-  status: "REGISTRADO",
-});
+): Promise<DiaryEntry[]> => {
+  const entries = await listDiaryEntries();
 
-export const getDiaryEntries = async (): Promise<DiaryEntry[]> => {
-  const response = await request<ApiPage<ApiDiaryEntry>>("/api/diarioentradas");
-
-  return response.content.map(toFrontendEntry);
+  return entries
+    .filter((entry) => String(entry.idPet) === petId)
+    .map(toDiaryEntry);
 };
 
 export const createDiaryEntry = async (
   petId: string,
   text: string,
 ): Promise<DiaryEntry> => {
-  const response = await request<ApiDiaryEntry>("/api/diarioentradas", {
+  const payload: ApiDiaryRequest = {
+    petId: Number(petId),
+    data: getToday(),
+    resumo: text,
+    status: "CONCLUIDO",
+  };
+
+  const response = await request<ApiDiaryResponse>("/api/diarioentradas", {
     method: "POST",
-    body: toApiEntryRequest(petId, text, new Date()),
+    body: JSON.stringify(payload),
   });
 
-  return toFrontendEntry(response);
+  return toDiaryEntry(response);
 };
 
 export const updateDiaryEntry = async (
-  entryId: string,
+  id: string,
   petId: string,
   text: string,
-  date: Date,
 ): Promise<DiaryEntry> => {
-  const response = await request<ApiDiaryEntry>(
-    `/api/diarioentradas/${entryId}`,
-    {
-      method: "PUT",
-      body: toApiEntryRequest(petId, text, date),
-    },
-  );
+  const payload: ApiDiaryRequest = {
+    petId: Number(petId),
+    data: getToday(),
+    resumo: text,
+    status: "CONCLUIDO",
+  };
 
-  return toFrontendEntry(response);
+  const response = await request<ApiDiaryResponse>(`/api/diarioentradas/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+
+  return toDiaryEntry(response);
 };
 
-export const getDiaryEntry = async (entryId: string): Promise<DiaryEntry> => {
-  const response = await request<ApiDiaryEntry>(
-    `/api/diarioentradas/${entryId}`,
-  );
-
-  return toFrontendEntry(response);
-};
-
-export const deleteDiaryEntry = async (entryId: string): Promise<void> => {
-  await request<void>(`/api/diarioentradas/${entryId}`, {
+export const deleteDiaryEntry = async (id: string): Promise<void> => {
+  await request<void>(`/api/diarioentradas/${id}`, {
     method: "DELETE",
   });
-};
-
-export const getDiaryEntriesByDate = async (
-  date: string,
-): Promise<DiaryEntry[]> => {
-  const response = await request<ApiPage<ApiDiaryEntry>>(
-    `/api/diarioentradas/data?data=${encodeURIComponent(date)}`,
-  );
-
-  return response.content.map(toFrontendEntry);
 };
