@@ -5,6 +5,8 @@ import {
   FlatList,
   Modal,
   TouchableOpacity,
+  Pressable,
+  ScrollView,
 } from "react-native";
 
 import { styles_th } from "../../styles/theme";
@@ -262,98 +264,111 @@ const Diary = () => {
 
           {/* MODAL DO REGISTRO */}
           <Modal
-            visible={
-              selectedEntry !==
-              undefined
-            }
-            transparent
-            animationType="fade"
-            onRequestClose={() =>
-              setSelectedEntry(
-                undefined,
-              )
-            }
-          >
-            <View
-              style={{
-                flex: 1,
-                backgroundColor:
-                  "rgba(0,0,0,0.5)",
-                justifyContent:
-                  "center",
-                padding: 20,
-              }}
-            >
-              <View
-                style={{
-                  backgroundColor: "#fff",
-                  borderRadius: 20,
-                  padding: 20,
-                }}
-              >
-                <Text
-                  style={styles_th.title}
-                >
-                  {selectedEntry
-                    ? getEntryTitle(
-                      new Date(
-                        selectedEntry.createdAt,
-                      ),
-                    )
-                    : "Registro"}
-                </Text>
+  visible={selectedEntry !== undefined}
+  transparent
+  animationType="fade"
+  onRequestClose={() =>
+    setSelectedEntry(undefined)
+  }
+>
+  <View
+    style={{
+      flex: 1,
+      backgroundColor: "rgba(0,0,0,0.5)",
+      justifyContent: "center",
+      padding: 20,
+    }}
+  >
+    {/* FUNDO CLICÁVEL */}
+    <Pressable
+      style={{
+        position: "absolute",
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+      }}
+      onPress={() =>
+        setSelectedEntry(undefined)
+      }
+    />
 
-                <Text
-                  style={{
-                    marginTop: 20,
-                    fontSize: 16,
-                    lineHeight: 24,
-                  }}
-                >
-                  {selectedEntry?.title}
-                </Text>
+    {/* POPUP */}
+    <View
+      style={{
+        backgroundColor: "#fff",
+        borderRadius: 20,
+        padding: 20,
+        maxHeight: "85%",
+      }}
+    >
+      <Text style={styles_th.title}>
+        {selectedEntry
+          ? getEntryTitle(
+              new Date(
+                selectedEntry.createdAt,
+              ),
+            )
+          : "Registro"}
+      </Text>
 
-                <Text
-                  style={{
-                    marginTop: 15,
-                    color: "#777",
-                  }}
-                >
-                  {selectedEntry
-                    ? new Date(
-                      selectedEntry.createdAt,
-                    ).toLocaleString()
-                    : ""}
-                </Text>
+      {/* CONTEÚDO ROLÁVEL */}
+      <ScrollView
+        style={{
+          marginTop: 20,
+        }}
+        showsVerticalScrollIndicator
+      >
+        <Text
+          style={{
+            fontSize: 16,
+            lineHeight: 24,
+          }}
+        >
+          {selectedEntry?.title}
+        </Text>
 
-                <TouchableOpacity
-                  style={[
-                    styles_th.button,
-                    {
-                      width: "100%",
-                      marginLeft: 0,
-                      marginTop: 20,
-                      borderRadius: 16,
-                    },
-                  ]}
-                  onPress={() =>
-                    setSelectedEntry(
-                      undefined,
-                    )
-                  }
-                >
-                  <Text
-                    style={{
-                      color: "#fff",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    Fechar
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </Modal>
+        <Text
+          style={{
+            marginTop: 15,
+            color: "#777",
+          }}
+        >
+          {selectedEntry
+            ? new Date(
+                selectedEntry.createdAt,
+              ).toLocaleString()
+            : ""}
+        </Text>
+      </ScrollView>
+
+      {/* BOTÃO SEMPRE VISÍVEL */}
+      <TouchableOpacity
+        style={[
+          styles_th.button,
+          {
+            width: "100%",
+            marginLeft: 0,
+            marginTop: 20,
+            borderRadius: 16,
+          },
+        ]}
+        onPress={() =>
+          setSelectedEntry(undefined)
+        }
+      >
+        <Text
+          style={{
+            color: "#fff",
+            fontWeight: "bold",
+          }}
+        >
+          Fechar
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
         </>
       )}
     </View>

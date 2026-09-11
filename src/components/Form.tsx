@@ -5,9 +5,12 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  Pressable,
 } from "react-native";
 
 import { styles_th } from "../styles/theme";
+
+const MAX_ENTRY_LENGTH = 1000;
 
 type Props = {
   initialText?: string;
@@ -30,6 +33,7 @@ const Form: React.FC<Props> = ({
 
   const openModal = () => {
     setError("");
+    setText(initialText);
     setModalVisible(true);
   };
 
@@ -50,7 +54,6 @@ const Form: React.FC<Props> = ({
 
     setError("");
     setModalVisible(false);
-    setText("");
   };
 
   return (
@@ -91,12 +94,13 @@ const Form: React.FC<Props> = ({
 
         {/* BOTÃO + / EDIÇÃO */}
         <TouchableOpacity
-          style={[styles_th.button,
-          {
-            marginLeft: 0,
-            borderTopLeftRadius: 0,
-            borderBottomLeftRadius: 0,
-          }
+          style={[
+            styles_th.button,
+            {
+              marginLeft: 0,
+              borderTopLeftRadius: 0,
+              borderBottomLeftRadius: 0,
+            },
           ]}
           onPress={openModal}
         >
@@ -121,6 +125,19 @@ const Form: React.FC<Props> = ({
             padding: 20,
           }}
         >
+          {/* FUNDO CLICÁVEL */}
+          <Pressable
+            style={{
+              position: "absolute",
+              top: 0,
+              right: 0,
+              bottom: 0,
+              left: 0,
+            }}
+            onPress={closeModal}
+          />
+
+          {/* CONTEÚDO DO POPUP */}
           <View
             style={{
               backgroundColor: "#fff",
@@ -142,7 +159,16 @@ const Form: React.FC<Props> = ({
                   : "Novo registro"}
               </Text>
 
-              <TouchableOpacity onPress={closeModal}>
+              <TouchableOpacity
+                onPress={closeModal}
+                accessibilityLabel="Fechar"
+                style={{
+                  width: 40,
+                  height: 40,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
                 <Text
                   style={{
                     fontSize: 26,
@@ -164,7 +190,7 @@ const Form: React.FC<Props> = ({
                   height: 180,
                   paddingHorizontal: 15,
                   paddingTop: 10,
-                  paddingBottom: 40,
+                  paddingBottom: 10,
                   textAlignVertical: "top",
                   borderWidth: error ? 2 : undefined,
                   borderColor: error ? "#E53935" : undefined,
@@ -181,8 +207,23 @@ const Form: React.FC<Props> = ({
               }}
               multiline
               numberOfLines={8}
+              maxLength={MAX_ENTRY_LENGTH}
               autoFocus
             />
+
+            {/* CONTADOR */}
+            <Text
+              style={{
+                marginTop: 6,
+                textAlign: "right",
+                color: text.length >= MAX_ENTRY_LENGTH
+                  ? "#E53935"
+                  : "#777",
+                fontSize: 12,
+              }}
+            >
+              {text.length}/{MAX_ENTRY_LENGTH}
+            </Text>
 
             {/* ERRO */}
             {error ? (
