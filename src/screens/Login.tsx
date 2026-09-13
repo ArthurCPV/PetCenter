@@ -8,8 +8,9 @@ import {
 } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
-
-import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type {
+  NativeStackNavigationProp,
+} from "@react-navigation/native-stack";
 
 import { useAuth } from "../auth/AuthContext";
 
@@ -17,10 +18,11 @@ import { styles_th } from "../styles/theme";
 
 import type { HomeStack } from "../types/navigation";
 
-type NavigationProp = NativeStackNavigationProp<
-  HomeStack,
-  "Login"
->;
+type NavigationProp =
+  NativeStackNavigationProp<
+    HomeStack,
+    "Login"
+  >;
 
 const isValidEmail = (
   value: string,
@@ -39,7 +41,9 @@ const Login = () => {
 
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
-  const [error, setError] = useState("");
+
+  const [error, setError] =
+    useState("");
 
   const [
     isSubmitting,
@@ -80,15 +84,6 @@ const Login = () => {
         trimmedEmail,
         senha,
       );
-
-      navigation.reset({
-        index: 0,
-        routes: [
-          {
-            name: "Home",
-          },
-        ],
-      });
     } catch (requestError) {
       setError(
         requestError instanceof Error

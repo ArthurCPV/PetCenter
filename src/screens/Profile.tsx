@@ -10,7 +10,6 @@ import {
   View,
 } from "react-native";
 import {
-  StackActions,
   useFocusEffect,
   useNavigation,
 } from "@react-navigation/native";
@@ -107,7 +106,6 @@ const Profile = () => {
 
   const handleLogout = async () => {
     await logoutUser();
-    navigation.dispatch(StackActions.replace("Welcome"));
   };
 
   const petCountText =

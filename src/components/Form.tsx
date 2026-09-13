@@ -27,7 +27,7 @@ const inputBaseStyle = {
 type Props = {
   initialText?: string;
   hasTodayEntry: boolean;
-  onSubmit: (text: string) => void;
+  onSubmit: (text: string) => Promise<void>;
 };
 
 const Form: React.FC<Props> = ({
@@ -38,6 +38,7 @@ const Form: React.FC<Props> = ({
   const [text, setText] = useState(initialText);
   const [modalVisible, setModalVisible] = useState(false);
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     setText(initialText);
@@ -54,7 +55,7 @@ const Form: React.FC<Props> = ({
     setModalVisible(false);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const trimmedText = text.trim();
 
     if (!trimmedText) {
@@ -62,9 +63,21 @@ const Form: React.FC<Props> = ({
       return;
     }
 
-    onSubmit(trimmedText);
+    setIsSubmitting(true);
     setError("");
-    setModalVisible(false);
+
+    try {
+      await onSubmit(trimmedText);
+      setModalVisible(false);
+    } catch (requestError) {
+      setError(
+        requestError instanceof Error
+          ? requestError.message
+          : "Não foi possível salvar o registro.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -104,6 +117,7 @@ const Form: React.FC<Props> = ({
         </TouchableOpacity>
 
         <TouchableOpacity
+          disabled={isSubmitting}
           style={[
             styles_th.button,
             {
@@ -258,9 +272,12 @@ const Form: React.FC<Props> = ({
                   marginLeft: 0,
                   marginTop: 20,
                   borderRadius: 16,
+                  opacity: isSubmitting ? 0.6 : 1,
                 },
               ]}
-              onPress={handleSubmit}
+              onPress={() => {
+                void handleSubmit();
+              }}
             >
               <Text
                 style={{
@@ -268,9 +285,11 @@ const Form: React.FC<Props> = ({
                   fontWeight: "bold",
                 }}
               >
-                {hasTodayEntry
-                  ? "Salvar alterações"
-                  : "Criar registro"}
+                {isSubmitting
+                  ? "Salvando..."
+                  : hasTodayEntry
+                    ? "Salvar alterações"
+                    : "Criar registro"}
               </Text>
             </TouchableOpacity>
           </View>

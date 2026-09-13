@@ -1,7 +1,8 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Image } from "react-native";
+import { ActivityIndicator, Image, Text, View } from "react-native";
 
+import { useAuth } from "../auth/AuthContext";
 import { colors } from "../styles/theme";
 
 import type {
@@ -125,37 +126,68 @@ const Tabs = () => {
 };
 
 const Home = () => {
+    const { isAuthenticated, isLoading } = useAuth();
+
+    if (isLoading) {
+        return (
+            <View
+                style={{
+                    flex: 1,
+                    justifyContent: "center",
+                    alignItems: "center",
+                    backgroundColor: "#fff",
+                }}
+            >
+                <ActivityIndicator size="large" color={colors.primary} />
+                <Text
+                    style={{
+                        marginTop: 12,
+                        color: "#666",
+                    }}
+                >
+                    Carregando sessão...
+                </Text>
+            </View>
+        );
+    }
+
     return (
         <Stack.Navigator
-            initialRouteName="Welcome"
+            initialRouteName={isAuthenticated ? "Home" : "Welcome"}
             screenOptions={{
                 headerShown: false,
             }}
         >
-            <Stack.Screen
-                name="Welcome"
-                component={Welcome}
-            />
+            {!isAuthenticated ? (
+                <>
+                    <Stack.Screen
+                        name="Welcome"
+                        component={Welcome}
+                    />
 
-            <Stack.Screen
-                name="Login"
-                component={Login}
-            />
+                    <Stack.Screen
+                        name="Login"
+                        component={Login}
+                    />
 
-            <Stack.Screen
-                name="Register"
-                component={Register}
-            />
+                    <Stack.Screen
+                        name="Register"
+                        component={Register}
+                    />
+                </>
+            ) : (
+                <>
+                    <Stack.Screen
+                        name="Home"
+                        component={Tabs}
+                    />
 
-            <Stack.Screen
-                name="Home"
-                component={Tabs}
-            />
-
-            <Stack.Screen
-                name="Details"
-                component={Details}
-            />
+                    <Stack.Screen
+                        name="Details"
+                        component={Details}
+                    />
+                </>
+            )}
         </Stack.Navigator>
     );
 };

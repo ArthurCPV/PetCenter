@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Modal,
   View,
@@ -15,7 +15,10 @@ import type { CreatePetData } from "../types";
 type Props = {
   visible: boolean;
   onClose: () => void;
-  onCreate: (data: CreatePetData) => void;
+  onCreate: (data: CreatePetData) => Promise<void> | void;
+  initialData?: Partial<CreatePetData>;
+  title?: string;
+  submitLabel?: string;
 };
 
 const inputBaseStyle = {
@@ -86,14 +89,21 @@ const CreatePetModal = ({
   visible,
   onClose,
   onCreate,
+  initialData,
+  title = "Novo Diário",
+  submitLabel = "Criar Diário",
 }: Props) => {
-  const [name, setName] = useState("");
-  const [species, setSpecies] = useState("");
-  const [breed, setBreed] = useState("");
-  const [birthDate, setBirthDate] = useState("");
+  const [name, setName] = useState(initialData?.name ?? "");
+  const [species, setSpecies] = useState(initialData?.species ?? "");
+  const [breed, setBreed] = useState(initialData?.breed ?? "");
+  const [birthDate, setBirthDate] = useState(initialData?.birthDate ?? "");
 
-  const [breedUnknown, setBreedUnknown] = useState(false);
-  const [birthDateUnknown, setBirthDateUnknown] = useState(false);
+  const [breedUnknown, setBreedUnknown] = useState(
+    Boolean(initialData?.breed === "Raça desconhecida"),
+  );
+  const [birthDateUnknown, setBirthDateUnknown] = useState(
+    Boolean(initialData?.birthDate === "Data de nascimento desconhecida"),
+  );
 
   const [nameError, setNameError] = useState("");
   const [speciesError, setSpeciesError] = useState("");
@@ -101,17 +111,40 @@ const CreatePetModal = ({
   const [birthDateError, setBirthDateError] = useState("");
 
   const resetForm = () => {
-    setName("");
-    setSpecies("");
-    setBreed("");
-    setBirthDate("");
-    setBreedUnknown(false);
-    setBirthDateUnknown(false);
+    setName(initialData?.name ?? "");
+    setSpecies(initialData?.species ?? "");
+    setBreed(initialData?.breed ?? "");
+    setBirthDate(initialData?.birthDate ?? "");
+    setBreedUnknown(Boolean(initialData?.breed === "Raça desconhecida"));
+    setBirthDateUnknown(
+      Boolean(initialData?.birthDate === "Data de nascimento desconhecida"),
+    );
     setNameError("");
     setSpeciesError("");
     setBreedError("");
     setBirthDateError("");
   };
+
+  const hydrateForm = () => {
+    setName(initialData?.name ?? "");
+    setSpecies(initialData?.species ?? "");
+    setBreed(initialData?.breed ?? "");
+    setBirthDate(initialData?.birthDate ?? "");
+    setBreedUnknown(Boolean(initialData?.breed === "Raça desconhecida"));
+    setBirthDateUnknown(
+      Boolean(initialData?.birthDate === "Data de nascimento desconhecida"),
+    );
+    setNameError("");
+    setSpeciesError("");
+    setBreedError("");
+    setBirthDateError("");
+  };
+
+  useEffect(() => {
+    if (visible) {
+      hydrateForm();
+    }
+  }, [visible, initialData]);
 
   const handleClose = () => {
     resetForm();
@@ -145,7 +178,7 @@ const CreatePetModal = ({
     }
   };
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
     const trimmedName = name.trim();
     const trimmedSpecies = species.trim();
     const trimmedBreed = breed.trim();
@@ -196,7 +229,7 @@ const CreatePetModal = ({
         : birthDate,
     };
 
-    onCreate(data);
+    await onCreate(data);
     resetForm();
     onClose();
   };
@@ -246,7 +279,7 @@ const CreatePetModal = ({
                 justifyContent: "space-between",
               }}
             >
-              <Text style={styles_th.title}>Novo Diário</Text>
+              <Text style={styles_th.title}>{title}</Text>
 
               <TouchableOpacity
                 onPress={handleClose}
@@ -501,7 +534,7 @@ const CreatePetModal = ({
                   fontWeight: "bold",
                 }}
               >
-                Criar Diário
+                {submitLabel}
               </Text>
             </TouchableOpacity>
           </ScrollView>

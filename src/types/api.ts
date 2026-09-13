@@ -63,6 +63,27 @@ export type ApiDiaryResponse = {
   atualizadoEm?: string;
 };
 
+export type ApiRegistroRequest = {
+  entradaId: number;
+  tipo: string;
+  subtipo?: string;
+  valor?: number;
+  unidade?: string;
+  nota?: string;
+};
+
+export type ApiRegistroResponse = {
+  id: number;
+  idDiarioEntrada: number;
+  tipo: string;
+  subtipo?: string;
+  valor?: number;
+  unidade?: string;
+  nota?: string;
+  horario: string;
+  atualizadoEm?: string;
+};
+
 export type ApiVeterinarianRequest = {
   crmv: string;
   especialidade: string;
@@ -75,6 +96,38 @@ export type ApiVeterinarianResponse = {
   crmv: string;
   especialidade: string;
   descricao?: string;
+};
+
+export type ApiAlertType =
+  | "CONSULTA"
+  | "REMEDIO"
+  | "ALIMENTACAO"
+  | "EXERCICIO"
+  | "OUTROS";
+
+export type ApiAlertRequest = {
+  petId: number;
+  tipo: ApiAlertType;
+  titulo: string;
+  descricao?: string;
+  dataInicio: string;
+  frequenciaHoras?: number;
+  dataFim?: string;
+};
+
+export type ApiAlertResponse = {
+  id: number;
+  petId: number;
+  petNome: string;
+  veterinarioId: number;
+  veterinarioNome: string;
+  tipo: ApiAlertType;
+  titulo: string;
+  descricao?: string;
+  dataInicio: string;
+  frequenciaHoras?: number;
+  dataFim?: string;
+  ativo: boolean;
 };
 
 export type ApiPage<T> = {

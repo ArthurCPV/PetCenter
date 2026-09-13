@@ -6,8 +6,10 @@ import type { ApiDiaryRequest, ApiDiaryResponse, ApiPage } from "../types/api";
 
 export const toDiaryEntry = (entry: ApiDiaryResponse): DiaryEntry => ({
   id: String(entry.id),
+  idPet: String(entry.idPet),
   title: entry.resumo ?? "",
   createdAt: new Date(entry.criadoEm),
+  records: [],
 });
 
 const getToday = (): string => {

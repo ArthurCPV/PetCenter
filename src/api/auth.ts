@@ -1,4 +1,4 @@
-import { request, removeToken, saveToken, ApiHttpError } from "./api";
+import { ApiHttpError, request, removeToken, saveToken } from "./api";
 
 import type {
   ApiLoginRequest,
@@ -24,7 +24,10 @@ export const login = async (data: ApiLoginRequest): Promise<string> => {
       error instanceof ApiHttpError &&
       (error.status === 401 || error.status === 403)
     ) {
-      throw new Error("Usuário não encontrado ou senha incorreta.");
+      throw new ApiHttpError(
+        "Usuário não encontrado ou senha incorreta.",
+        error.status,
+      );
     }
 
     throw error;
@@ -44,10 +47,24 @@ export const logout = async (): Promise<void> => {
 };
 
 export const registerUser = async (data: ApiUserRequest): Promise<void> => {
-  await request<void>("/api/users", {
-    method: "POST",
-    authenticated: false,
-    body: JSON.stringify(data),
+  try {
+    await request<void>("/api/users", {
+      method: "POST",
+      authenticated: false,
+      body: JSON.stringify(data),
+    });
+  } catch (error) {
+    if (error instanceof ApiHttpError && error.status === 409) {
+      throw new ApiHttpError("Este e-mail já está cadastrado.", error.status);
+    }
+
+    throw error;
+  }
+};
+
+export const deleteUserAccount = async (id: number): Promise<void> => {
+  await request<void>(`/api/users/${id}`, {
+    method: "DELETE",
   });
 };
 

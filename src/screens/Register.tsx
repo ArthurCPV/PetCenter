@@ -1,4 +1,5 @@
 import { useState } from "react";
+
 import {
   ScrollView,
   Text,
@@ -8,21 +9,42 @@ import {
 } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
-import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+
+import type {
+  NativeStackNavigationProp,
+} from "@react-navigation/native-stack";
 
 import {
   createVeterinarianProfile,
+  deleteUserAccount,
+  getUserByEmail,
+  login as loginJava,
+  logout as logoutJava,
   registerUser,
 } from "../api/auth";
 
 import {
-  useAuth,
+  ApiHttpError,
+} from "../api/api";
+
+import {
+  FirebaseEmailAlreadyInUseError,
+  deleteCurrentFirebaseUser,
+  logoutFirebaseUser,
+  registerFirebaseUser,
+} from "../api/firebaseAuth";
+
+import { useAuth } from "../auth/AuthContext";
+
+import type {
+  UserRole,
 } from "../auth/AuthContext";
 
-import type { UserRole } from "../auth/AuthContext";
-
 import { styles_th } from "../styles/theme";
-import type { HomeStack } from "../types/navigation";
+
+import type {
+  HomeStack,
+} from "../types/navigation";
 
 type NavigationProp =
   NativeStackNavigationProp<
@@ -50,9 +72,6 @@ const emptyErrors: FieldErrors = {
   descricao: "",
 };
 
-/**
- * Mantém somente os números do telefone.
- */
 const onlyPhoneNumbers = (
   value: string,
 ): string => {
@@ -61,10 +80,6 @@ const onlyPhoneNumbers = (
     .slice(0, 11);
 };
 
-/**
- * Formata automaticamente números
- * de telefone brasileiros.
- */
 const formatPhone = (
   value: string,
 ): string => {
@@ -110,8 +125,7 @@ const Register = () => {
     useNavigation<NavigationProp>();
 
   const {
-    loginUser,
-    logoutUser,
+    runAuthOperation,
   } = useAuth();
 
   const [role, setRole] =
@@ -149,9 +163,12 @@ const Register = () => {
   const [isSubmitting, setIsSubmitting] =
     useState(false);
 
+  let firebaseUserWasCreated = false;
+  let javaUserWasCreated = false;
+
   const clearFieldError = (
     field: keyof FieldErrors,
-  ) => {
+  ): void => {
     setFieldErrors((current) => ({
       ...current,
       [field]: "",
@@ -160,231 +177,327 @@ const Register = () => {
     setRequestError("");
   };
 
-  const validateForm = (): boolean => {
-    const errors: FieldErrors = {
-      ...emptyErrors,
+  const validateForm =
+    (): boolean => {
+      const errors: FieldErrors = {
+        ...emptyErrors,
+      };
+
+      const trimmedNome =
+        nome.trim();
+
+      const trimmedEmail =
+        email.trim();
+
+      const phoneNumbers =
+        onlyPhoneNumbers(telefone);
+
+      const trimmedCrmv =
+        crmv.trim();
+
+      const trimmedEspecialidade =
+        especialidade.trim();
+
+      const trimmedDescricao =
+        descricao.trim();
+
+      if (!trimmedNome) {
+        errors.nome =
+          "Informe seu nome.";
+      } else if (
+        trimmedNome.length < 3 ||
+        trimmedNome.length > 100
+      ) {
+        errors.nome =
+          "O nome deve ter entre 3 e 100 caracteres.";
+      }
+
+      if (!trimmedEmail) {
+        errors.email =
+          "Informe seu e-mail.";
+      } else {
+        const emailRegex =
+          /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (
+          !emailRegex.test(
+            trimmedEmail,
+          )
+        ) {
+          errors.email =
+            "Informe um e-mail válido.";
+        } else if (
+          trimmedEmail.length > 150
+        ) {
+          errors.email =
+            "O e-mail deve ter no máximo 150 caracteres.";
+        }
+      }
+
+      if (!senha) {
+        errors.senha =
+          "Informe sua senha.";
+      } else if (
+        senha.length < 6 ||
+        senha.length > 8
+      ) {
+        errors.senha =
+          "A senha deve ter entre 6 e 8 caracteres.";
+      }
+
+      if (!phoneNumbers) {
+        errors.telefone =
+          "Informe seu telefone.";
+      } else if (
+        phoneNumbers.length !== 10 &&
+        phoneNumbers.length !== 11
+      ) {
+        errors.telefone =
+          "Informe um telefone válido com DDD.";
+      }
+
+      if (role === "VETERINARIO") {
+        if (!trimmedCrmv) {
+          errors.crmv =
+            "Informe seu CRMV.";
+        } else if (
+          trimmedCrmv.length < 4 ||
+          trimmedCrmv.length > 20
+        ) {
+          errors.crmv =
+            "O CRMV deve ter entre 4 e 20 caracteres.";
+        }
+
+        if (!trimmedEspecialidade) {
+          errors.especialidade =
+            "Informe sua especialidade.";
+        } else if (
+          trimmedEspecialidade.length < 3 ||
+          trimmedEspecialidade.length > 100
+        ) {
+          errors.especialidade =
+            "A especialidade deve ter entre 3 e 100 caracteres.";
+        }
+
+        if (
+          trimmedDescricao &&
+          (
+            trimmedDescricao.length < 10 ||
+            trimmedDescricao.length > 500
+          )
+        ) {
+          errors.descricao =
+            "A descrição deve ter entre 10 e 500 caracteres.";
+        }
+      }
+
+      setFieldErrors(errors);
+
+      return !Object.values(
+        errors,
+      ).some(
+        (message) => message !== "",
+      );
     };
 
-    const trimmedNome =
-      nome.trim();
+  const handleRegister =
+    async (): Promise<void> => {
+      setRequestError("");
 
-    const trimmedEmail =
-      email.trim();
-
-    const phoneNumbers =
-      onlyPhoneNumbers(telefone);
-
-    const trimmedCrmv =
-      crmv.trim();
-
-    const trimmedEspecialidade =
-      especialidade.trim();
-
-    const trimmedDescricao =
-      descricao.trim();
-
-    if (!trimmedNome) {
-      errors.nome =
-        "Informe seu nome.";
-    } else if (
-      trimmedNome.length < 3 ||
-      trimmedNome.length > 100
-    ) {
-      errors.nome =
-        "O nome deve ter entre 3 e 100 caracteres.";
-    }
-
-    if (!trimmedEmail) {
-      errors.email =
-        "Informe seu e-mail.";
-    } else {
-      const emailRegex =
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-      if (
-        !emailRegex.test(
-          trimmedEmail,
-        )
-      ) {
-        errors.email =
-          "Informe um e-mail válido.";
-      } else if (
-        trimmedEmail.length > 150
-      ) {
-        errors.email =
-          "O e-mail deve ter no máximo 150 caracteres.";
-      }
-    }
-
-    if (!senha) {
-      errors.senha =
-        "Informe sua senha.";
-    } else if (
-      senha.length < 6 ||
-      senha.length > 8
-    ) {
-      errors.senha =
-        "A senha deve ter entre 6 e 8 caracteres.";
-    }
-
-    if (!phoneNumbers) {
-      errors.telefone =
-        "Informe seu telefone.";
-    } else if (
-      phoneNumbers.length !== 10 &&
-      phoneNumbers.length !== 11
-    ) {
-      errors.telefone =
-        "Informe um telefone válido com DDD.";
-    }
-
-    if (
-      role === "VETERINARIO"
-    ) {
-      if (!trimmedCrmv) {
-        errors.crmv =
-          "Informe seu CRMV.";
-      } else if (
-        trimmedCrmv.length < 4 ||
-        trimmedCrmv.length > 20
-      ) {
-        errors.crmv =
-          "O CRMV deve ter entre 4 e 20 caracteres.";
+      if (!validateForm()) {
+        return;
       }
 
-      if (
-        !trimmedEspecialidade
-      ) {
-        errors.especialidade =
-          "Informe sua especialidade.";
-      } else if (
-        trimmedEspecialidade.length <
-        3 ||
-        trimmedEspecialidade.length >
-        100
-      ) {
-        errors.especialidade =
-          "A especialidade deve ter entre 3 e 100 caracteres.";
-      }
+      const trimmedNome =
+        nome.trim();
 
-      if (
-        trimmedDescricao &&
-        (
-          trimmedDescricao.length <
-          10 ||
-          trimmedDescricao.length >
-          500
-        )
-      ) {
-        errors.descricao =
-          "A descrição deve ter entre 10 e 500 caracteres.";
-      }
-    }
+      const trimmedEmail =
+        email.trim();
 
-    setFieldErrors(errors);
+      const phoneNumbers =
+        onlyPhoneNumbers(telefone);
 
-    return !Object.values(
-      errors,
-    ).some(
-      (message) =>
-        message !== "",
-    );
-  };
+      const trimmedCrmv =
+        crmv.trim();
 
-  const handleRegister = async () => {
-    setRequestError("");
+      const trimmedEspecialidade =
+        especialidade.trim();
 
-    if (!validateForm()) {
-      return;
-    }
+      const trimmedDescricao =
+        descricao.trim();
 
-    const trimmedNome =
-      nome.trim();
+      setIsSubmitting(true);
 
-    const trimmedEmail =
-      email.trim();
+      try {
+        await runAuthOperation(
+          async (): Promise<void> => {
+            /*
+             * --------------------------------------------------
+             * 1. GARANTIR A CONTA FIREBASE
+             * --------------------------------------------------
+             *
+             * Firebase é o primeiro passo.
+             *
+             * Se já existir, fazemos login em vez de criar
+             * outra conta.
+             */
+            try {
+              await registerFirebaseUser(
+                trimmedEmail,
+                senha,
+              );
 
-    const phoneNumbers =
-      onlyPhoneNumbers(telefone);
+              firebaseUserWasCreated = true;
+            } catch (firebaseError) {
+              if (
+                firebaseError instanceof
+                FirebaseEmailAlreadyInUseError
+              ) {
+                throw new Error(
+                  "Este e-mail já está cadastrado.",
+                );
+              } else {
+                throw firebaseError;
+              }
+            }
 
-    const trimmedCrmv =
-      crmv.trim();
+            /*
+             * --------------------------------------------------
+             * 2. VERIFICAR O USUÁRIO NO JAVA
+             * --------------------------------------------------
+             *
+             * Tentamos login primeiro.
+             *
+             * Se funcionar, o usuário já existe no Java.
+             * Não fazemos POST duplicado.
+             *
+             * Se retornar 401/403, consideramos que o usuário
+             * ainda não existe no Java e fazemos cadastro.
+             */
+            try {
+              await loginJava({
+                email: trimmedEmail,
+                senha,
+              });
+              throw new Error(
+                "Este e-mail já está cadastrado.",
+              );
+            } catch (javaError) {
+              if (
+                javaError instanceof
+                ApiHttpError &&
+                (
+                  javaError.status === 401 ||
+                  javaError.status === 403
+                )
+              ) {
+                await registerUser({
+                  nome: trimmedNome,
+                  email: trimmedEmail,
+                  senha,
+                  telefone:
+                    phoneNumbers,
+                  tipoUsuario: role,
+                });
 
-    const trimmedEspecialidade =
-      especialidade.trim();
+                javaUserWasCreated = true;
+              } else {
+                throw javaError;
+              }
+            }
 
-    const trimmedDescricao =
-      descricao.trim();
+            /*
+             * --------------------------------------------------
+             * 3. PERFIL DE VETERINÁRIO
+             * --------------------------------------------------
+             *
+             * Só criamos o perfil quando o usuário Java
+             * realmente acabou de ser criado.
+             *
+             * Se a conta já existia, não tentamos criar o mesmo
+             * perfil novamente.
+             */
+            if (
+              role === "VETERINARIO" &&
+              javaUserWasCreated
+            ) {
+              await loginJava({
+                email: trimmedEmail,
+                senha,
+              });
 
-    setIsSubmitting(true);
+              await createVeterinarianProfile({
+                crmv: trimmedCrmv,
+                especialidade:
+                  trimmedEspecialidade,
+                descricao:
+                  trimmedDescricao ||
+                  undefined,
+              });
+            }
 
-    try {
-      await registerUser({
-        nome: trimmedNome,
-        email: trimmedEmail,
-        senha,
-        telefone: phoneNumbers,
-        tipoUsuario: role,
-      });
+            await logoutJava();
 
-      if (
-        role === "VETERINARIO"
-      ) {
-        /*
-         * O usuário precisa estar autenticado
-         * para criar o próprio perfil veterinário.
-         *
-         * Usamos o AuthContext para manter
-         * token e usuário sincronizados.
-         */
-        await loginUser(
-          trimmedEmail,
-          senha,
-        );
-
-        await createVeterinarianProfile(
-          {
-            crmv: trimmedCrmv,
-            especialidade:
-              trimmedEspecialidade,
-            descricao:
-              trimmedDescricao ||
-              undefined,
+            /*
+             * Cadastro concluído nos dois sistemas.
+             */
+            await logoutFirebaseUser();
           },
         );
 
+        navigation.navigate("Login");
+      } catch (registerError) {
         /*
-         * Depois de concluir o cadastro
-         * do perfil veterinário, encerramos
-         * essa sessão temporária.
+         * Se esta tentativa criou a conta Firebase, desfazemos
+         * essa criação quando o cadastro Java não conclui.
+         * Assim evitamos uma conta órfã em apenas um sistema.
          */
-        await logoutUser();
-      }
+        if (javaUserWasCreated) {
+          try {
+            await loginJava({
+              email: trimmedEmail,
+              senha,
+            });
 
-      navigation.navigate(
-        "Login",
-      );
-    } catch (requestError) {
-      setRequestError(
-        requestError instanceof Error
-          ? requestError.message
-          : "Não foi possível criar a conta.",
-      );
+            const createdUser = await getUserByEmail(
+              trimmedEmail,
+            );
 
-      /*
-       * Garante que um token criado
-       * durante um cadastro que falhou
-       * não fique preso na sessão.
-       */
-      try {
-        await logoutUser();
-      } catch {
-        // Não substitui o erro original.
+            await deleteUserAccount(createdUser.id);
+          } catch {
+            // Mantém o erro original do cadastro.
+          }
+        }
+
+        if (firebaseUserWasCreated) {
+          try {
+            await deleteCurrentFirebaseUser();
+          } catch {
+            // Mantém o erro original do cadastro.
+          }
+        }
+
+        try {
+          await logoutJava();
+        } catch {
+          // Mantém o erro original.
+        }
+
+        try {
+          await logoutFirebaseUser();
+        } catch {
+          // Mantém o erro original.
+        }
+
+        setRequestError(
+          registerError instanceof Error
+            ? registerError.message
+            : "Não foi possível criar a conta.",
+        );
+      } finally {
+        setIsSubmitting(false);
       }
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    };
 
   return (
     <ScrollView
@@ -392,9 +505,7 @@ const Register = () => {
         padding: 25,
       }}
     >
-      <Text
-        style={styles_th.title}
-      >
+      <Text style={styles_th.title}>
         Criar conta
       </Text>
 
@@ -453,7 +564,8 @@ const Register = () => {
             borderRadius: 12,
             borderWidth: 1,
             borderColor:
-              role === "VETERINARIO"
+              role ===
+                "VETERINARIO"
                 ? "#E53935"
                 : "#ccc",
             alignItems: "center",
@@ -470,9 +582,7 @@ const Register = () => {
         value={nome}
         onChangeText={(value) => {
           setNome(value);
-          clearFieldError(
-            "nome",
-          );
+          clearFieldError("nome");
         }}
         style={[
           styles_th.input,
@@ -496,18 +606,17 @@ const Register = () => {
         >
           {fieldErrors.nome}
         </Text>
-      ) : null}
+      ) : undefined}
 
       <TextInput
         placeholder="Email"
         value={email}
         onChangeText={(value) => {
           setEmail(value);
-          clearFieldError(
-            "email",
-          );
+          clearFieldError("email");
         }}
         autoCapitalize="none"
+        autoCorrect={false}
         keyboardType="email-address"
         style={[
           styles_th.input,
@@ -531,18 +640,18 @@ const Register = () => {
         >
           {fieldErrors.email}
         </Text>
-      ) : null}
+      ) : undefined}
 
       <TextInput
         placeholder="Senha (6 a 8 caracteres)"
         value={senha}
         onChangeText={(value) => {
           setSenha(value);
-          clearFieldError(
-            "senha",
-          );
+          clearFieldError("senha");
         }}
         secureTextEntry
+        autoCapitalize="none"
+        autoCorrect={false}
         style={[
           styles_th.input,
           {
@@ -565,7 +674,7 @@ const Register = () => {
         >
           {fieldErrors.senha}
         </Text>
-      ) : null}
+      ) : undefined}
 
       <TextInput
         placeholder="Telefone"
@@ -574,9 +683,7 @@ const Register = () => {
           setTelefone(
             formatPhone(value),
           );
-          clearFieldError(
-            "telefone",
-          );
+          clearFieldError("telefone");
         }}
         keyboardType="phone-pad"
         maxLength={15}
@@ -602,18 +709,17 @@ const Register = () => {
         >
           {fieldErrors.telefone}
         </Text>
-      ) : null}
+      ) : undefined}
 
-      {role === "VETERINARIO" ? (
+      {role ===
+        "VETERINARIO" ? (
         <>
           <TextInput
             placeholder="CRMV"
             value={crmv}
             onChangeText={(value) => {
               setCrmv(value);
-              clearFieldError(
-                "crmv",
-              );
+              clearFieldError("crmv");
             }}
             style={[
               styles_th.input,
@@ -637,7 +743,7 @@ const Register = () => {
             >
               {fieldErrors.crmv}
             </Text>
-          ) : null}
+          ) : undefined}
 
           <TextInput
             placeholder="Especialidade"
@@ -674,7 +780,7 @@ const Register = () => {
                 fieldErrors.especialidade
               }
             </Text>
-          ) : null}
+          ) : undefined}
 
           <TextInput
             placeholder="Descrição profissional (opcional)"
@@ -709,11 +815,13 @@ const Register = () => {
                 color: "#E53935",
               }}
             >
-              {fieldErrors.descricao}
+              {
+                fieldErrors.descricao
+              }
             </Text>
-          ) : null}
+          ) : undefined}
         </>
-      ) : null}
+      ) : undefined}
 
       {requestError ? (
         <Text
@@ -724,13 +832,13 @@ const Register = () => {
         >
           {requestError}
         </Text>
-      ) : null}
+      ) : undefined}
 
       <TouchableOpacity
         disabled={isSubmitting}
-        onPress={() =>
-          void handleRegister()
-        }
+        onPress={() => {
+          void handleRegister();
+        }}
         style={[
           styles_th.button,
           {
@@ -738,10 +846,9 @@ const Register = () => {
             marginLeft: 0,
             marginTop: 20,
             borderRadius: 16,
-            opacity:
-              isSubmitting
-                ? 0.6
-                : 1,
+            opacity: isSubmitting
+              ? 0.6
+              : 1,
           },
         ]}
       >
@@ -758,11 +865,11 @@ const Register = () => {
       </TouchableOpacity>
 
       <TouchableOpacity
-        onPress={() =>
+        onPress={() => {
           navigation.navigate(
             "Login",
-          )
-        }
+          );
+        }}
         style={{
           marginTop: 15,
           alignItems: "center",
