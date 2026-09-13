@@ -1,8 +1,10 @@
 import { request } from "./api";
+
 import type { DiaryEntry } from "../types";
+
 import type { ApiDiaryRequest, ApiDiaryResponse, ApiPage } from "../types/api";
 
-const toDiaryEntry = (entry: ApiDiaryResponse): DiaryEntry => ({
+export const toDiaryEntry = (entry: ApiDiaryResponse): DiaryEntry => ({
   id: String(entry.id),
   title: entry.resumo ?? "",
   createdAt: new Date(entry.criadoEm),
@@ -38,7 +40,7 @@ export const createDiaryEntry = async (
     petId: Number(petId),
     data: getToday(),
     resumo: text,
-    status: "CONCLUIDO",
+    status: "COMPLETO",
   };
 
   const response = await request<ApiDiaryResponse>("/api/diarioentradas", {
@@ -58,13 +60,16 @@ export const updateDiaryEntry = async (
     petId: Number(petId),
     data: getToday(),
     resumo: text,
-    status: "CONCLUIDO",
+    status: "COMPLETO",
   };
 
-  const response = await request<ApiDiaryResponse>(`/api/diarioentradas/${id}`, {
-    method: "PUT",
-    body: JSON.stringify(payload),
-  });
+  const response = await request<ApiDiaryResponse>(
+    `/api/diarioentradas/${id}`,
+    {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    },
+  );
 
   return toDiaryEntry(response);
 };

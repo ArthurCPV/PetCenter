@@ -1,12 +1,22 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export const API_URL = "https://COLE-AQUI-A-URL-DO-RENDER.onrender.com";
+export const API_URL = "https://challenge-java-petcenter.onrender.com";
 
 const TOKEN_KEY = "PETCENTER_TOKEN";
 
 type RequestOptions = RequestInit & {
   authenticated?: boolean;
 };
+
+export class ApiHttpError extends Error {
+  readonly status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "ApiHttpError";
+    this.status = status;
+  }
+}
 
 export const getToken = async (): Promise<string | null> => {
   return AsyncStorage.getItem(TOKEN_KEY);
@@ -20,13 +30,41 @@ export const removeToken = async (): Promise<void> => {
   await AsyncStorage.removeItem(TOKEN_KEY);
 };
 
+const extractErrorMessage = (body: unknown, status: number): string => {
+  if (typeof body === "object" && body !== null) {
+    if ("message" in body && typeof body.message === "string") {
+      return body.message;
+    }
+
+    if ("detail" in body && typeof body.detail === "string") {
+      return body.detail;
+    }
+
+    if ("error" in body && typeof body.error === "string") {
+      return body.error;
+    }
+
+    if ("errors" in body && Array.isArray(body.errors)) {
+      const messages = body.errors.filter(
+        (error): error is string => typeof error === "string",
+      );
+
+      if (messages.length > 0) {
+        return messages.join("\n");
+      }
+    }
+  }
+
+  return `Erro HTTP ${status}`;
+};
+
 export const request = async <T>(
   endpoint: string,
   options: RequestOptions = {},
 ): Promise<T> => {
   const { authenticated = true, headers, ...fetchOptions } = options;
-  const requestHeaders = new Headers(headers);
 
+  const requestHeaders = new Headers(headers);
   requestHeaders.set("Content-Type", "application/json");
   requestHeaders.set("Accept", "application/json");
 
@@ -36,6 +74,8 @@ export const request = async <T>(
     if (token) {
       requestHeaders.set("Authorization", `Bearer ${token}`);
     }
+  } else {
+    requestHeaders.delete("Authorization");
   }
 
   const response = await fetch(`${API_URL}${endpoint}`, {
@@ -44,24 +84,18 @@ export const request = async <T>(
   });
 
   if (!response.ok) {
-    let message = `Erro HTTP ${response.status}`;
+    let responseBody: unknown | undefined;
 
     try {
-      const body: unknown = await response.json();
-
-      if (
-        typeof body === "object" &&
-        body !== null &&
-        "message" in body &&
-        typeof body.message === "string"
-      ) {
-        message = body.message;
-      }
+      responseBody = await response.json();
     } catch {
-      // Resposta sem JSON.
+      responseBody = undefined;
     }
 
-    throw new Error(message);
+    throw new ApiHttpError(
+      extractErrorMessage(responseBody, response.status),
+      response.status,
+    );
   }
 
   if (response.status === 204) {

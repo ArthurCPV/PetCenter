@@ -6,19 +6,29 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import {
   createVeterinarianProfile,
-  login,
   registerUser,
 } from "../api/auth";
+
+import {
+  useAuth,
+} from "../auth/AuthContext";
+
 import type { UserRole } from "../auth/AuthContext";
+
 import { styles_th } from "../styles/theme";
 import type { HomeStack } from "../types/navigation";
 
-type NavigationProp = NativeStackNavigationProp<HomeStack, "Login">;
+type NavigationProp =
+  NativeStackNavigationProp<
+    HomeStack,
+    "Login"
+  >;
 
 type FieldErrors = {
   nome: string;
@@ -43,19 +53,23 @@ const emptyErrors: FieldErrors = {
 /**
  * Mantém somente os números do telefone.
  */
-const onlyPhoneNumbers = (value: string): string => {
-  return value.replace(/\D/g, "").slice(0, 11);
+const onlyPhoneNumbers = (
+  value: string,
+): string => {
+  return value
+    .replace(/\D/g, "")
+    .slice(0, 11);
 };
 
 /**
- * Formata automaticamente números de telefone brasileiros.
- *
- * Exemplos:
- * 11999999999 -> (11) 99999-9999
- * 1133334444  -> (11) 3333-4444
+ * Formata automaticamente números
+ * de telefone brasileiros.
  */
-const formatPhone = (value: string): string => {
-  const numbers = onlyPhoneNumbers(value);
+const formatPhone = (
+  value: string,
+): string => {
+  const numbers =
+    onlyPhoneNumbers(value);
 
   if (numbers.length === 0) {
     return "";
@@ -66,51 +80,78 @@ const formatPhone = (value: string): string => {
   }
 
   if (numbers.length <= 7) {
-    return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+    return `(${numbers.slice(
+      0,
+      2,
+    )}) ${numbers.slice(2)}`;
   }
 
-  /*
-   * Com 11 dígitos, consideramos celular:
-   * (XX) XXXXX-XXXX
-   */
   if (numbers.length === 11) {
-    return `(${numbers.slice(0, 2)}) ${numbers.slice(
+    return `(${numbers.slice(
+      0,
+      2,
+    )}) ${numbers.slice(
       2,
       7,
     )}-${numbers.slice(7)}`;
   }
 
-  /*
-   * Com 10 dígitos, consideramos telefone fixo:
-   * (XX) XXXX-XXXX
-   */
-  return `(${numbers.slice(0, 2)}) ${numbers.slice(
+  return `(${numbers.slice(
+    0,
+    2,
+  )}) ${numbers.slice(
     2,
     6,
   )}-${numbers.slice(6)}`;
 };
 
 const Register = () => {
-  const navigation = useNavigation<NavigationProp>();
+  const navigation =
+    useNavigation<NavigationProp>();
 
-  const [role, setRole] = useState<UserRole>("TUTOR");
+  const {
+    loginUser,
+    logoutUser,
+  } = useAuth();
 
-  const [nome, setNome] = useState("");
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
-  const [telefone, setTelefone] = useState("");
+  const [role, setRole] =
+    useState<UserRole>("TUTOR");
 
-  const [crmv, setCrmv] = useState("");
-  const [especialidade, setEspecialidade] = useState("");
-  const [descricao, setDescricao] = useState("");
+  const [nome, setNome] =
+    useState("");
+
+  const [email, setEmail] =
+    useState("");
+
+  const [senha, setSenha] =
+    useState("");
+
+  const [telefone, setTelefone] =
+    useState("");
+
+  const [crmv, setCrmv] =
+    useState("");
+
+  const [especialidade, setEspecialidade] =
+    useState("");
+
+  const [descricao, setDescricao] =
+    useState("");
 
   const [fieldErrors, setFieldErrors] =
-    useState<FieldErrors>(emptyErrors);
+    useState<FieldErrors>(
+      emptyErrors,
+    );
 
-  const [requestError, setRequestError] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [requestError, setRequestError] =
+    useState("");
 
-  const clearFieldError = (field: keyof FieldErrors) => {
+  const [isSubmitting, setIsSubmitting] =
+    useState(false);
+
+  const clearFieldError = (
+    field: keyof FieldErrors,
+  ) => {
     setFieldErrors((current) => ({
       ...current,
       [field]: "",
@@ -124,16 +165,27 @@ const Register = () => {
       ...emptyErrors,
     };
 
-    const trimmedNome = nome.trim();
-    const trimmedEmail = email.trim();
-    const phoneNumbers = onlyPhoneNumbers(telefone);
-    const trimmedCrmv = crmv.trim();
+    const trimmedNome =
+      nome.trim();
+
+    const trimmedEmail =
+      email.trim();
+
+    const phoneNumbers =
+      onlyPhoneNumbers(telefone);
+
+    const trimmedCrmv =
+      crmv.trim();
+
     const trimmedEspecialidade =
       especialidade.trim();
-    const trimmedDescricao = descricao.trim();
+
+    const trimmedDescricao =
+      descricao.trim();
 
     if (!trimmedNome) {
-      errors.nome = "Informe seu nome.";
+      errors.nome =
+        "Informe seu nome.";
     } else if (
       trimmedNome.length < 3 ||
       trimmedNome.length > 100
@@ -143,22 +195,30 @@ const Register = () => {
     }
 
     if (!trimmedEmail) {
-      errors.email = "Informe seu e-mail.";
+      errors.email =
+        "Informe seu e-mail.";
     } else {
       const emailRegex =
         /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-      if (!emailRegex.test(trimmedEmail)) {
+      if (
+        !emailRegex.test(
+          trimmedEmail,
+        )
+      ) {
         errors.email =
           "Informe um e-mail válido.";
-      } else if (trimmedEmail.length > 150) {
+      } else if (
+        trimmedEmail.length > 150
+      ) {
         errors.email =
           "O e-mail deve ter no máximo 150 caracteres.";
       }
     }
 
     if (!senha) {
-      errors.senha = "Informe sua senha.";
+      errors.senha =
+        "Informe sua senha.";
     } else if (
       senha.length < 6 ||
       senha.length > 8
@@ -178,9 +238,12 @@ const Register = () => {
         "Informe um telefone válido com DDD.";
     }
 
-    if (role === "VETERINARIO") {
+    if (
+      role === "VETERINARIO"
+    ) {
       if (!trimmedCrmv) {
-        errors.crmv = "Informe seu CRMV.";
+        errors.crmv =
+          "Informe seu CRMV.";
       } else if (
         trimmedCrmv.length < 4 ||
         trimmedCrmv.length > 20
@@ -189,12 +252,16 @@ const Register = () => {
           "O CRMV deve ter entre 4 e 20 caracteres.";
       }
 
-      if (!trimmedEspecialidade) {
+      if (
+        !trimmedEspecialidade
+      ) {
         errors.especialidade =
           "Informe sua especialidade.";
       } else if (
-        trimmedEspecialidade.length < 3 ||
-        trimmedEspecialidade.length > 100
+        trimmedEspecialidade.length <
+        3 ||
+        trimmedEspecialidade.length >
+        100
       ) {
         errors.especialidade =
           "A especialidade deve ter entre 3 e 100 caracteres.";
@@ -202,8 +269,12 @@ const Register = () => {
 
       if (
         trimmedDescricao &&
-        (trimmedDescricao.length < 10 ||
-          trimmedDescricao.length > 500)
+        (
+          trimmedDescricao.length <
+          10 ||
+          trimmedDescricao.length >
+          500
+        )
       ) {
         errors.descricao =
           "A descrição deve ter entre 10 e 500 caracteres.";
@@ -212,11 +283,12 @@ const Register = () => {
 
     setFieldErrors(errors);
 
-    const hasErrors = Object.values(errors).some(
-      (message) => message !== "",
+    return !Object.values(
+      errors,
+    ).some(
+      (message) =>
+        message !== "",
     );
-
-    return !hasErrors;
   };
 
   const handleRegister = async () => {
@@ -226,24 +298,23 @@ const Register = () => {
       return;
     }
 
-    const trimmedNome = nome.trim();
-    const trimmedEmail = email.trim();
+    const trimmedNome =
+      nome.trim();
 
-    /*
-     * A API recebe o telefone sem os caracteres da máscara.
-     *
-     * Exemplo:
-     * "(11) 99999-9999"
-     *          ↓
-     * "11999999999"
-     */
+    const trimmedEmail =
+      email.trim();
+
     const phoneNumbers =
       onlyPhoneNumbers(telefone);
 
-    const trimmedCrmv = crmv.trim();
+    const trimmedCrmv =
+      crmv.trim();
+
     const trimmedEspecialidade =
       especialidade.trim();
-    const trimmedDescricao = descricao.trim();
+
+    const trimmedDescricao =
+      descricao.trim();
 
     setIsSubmitting(true);
 
@@ -256,32 +327,60 @@ const Register = () => {
         tipoUsuario: role,
       });
 
-      if (role === "VETERINARIO") {
+      if (
+        role === "VETERINARIO"
+      ) {
         /*
-         * O backend exige autenticação para POST /api/veterinarios.
-         * Como acabamos de criar o usuário veterinário,
-         * fazemos login antes de criar o perfil profissional.
+         * O usuário precisa estar autenticado
+         * para criar o próprio perfil veterinário.
+         *
+         * Usamos o AuthContext para manter
+         * token e usuário sincronizados.
          */
-        await login({
-          email: trimmedEmail,
+        await loginUser(
+          trimmedEmail,
           senha,
-        });
+        );
 
-        await createVeterinarianProfile({
-          crmv: trimmedCrmv,
-          especialidade: trimmedEspecialidade,
-          descricao:
-            trimmedDescricao || undefined,
-        });
+        await createVeterinarianProfile(
+          {
+            crmv: trimmedCrmv,
+            especialidade:
+              trimmedEspecialidade,
+            descricao:
+              trimmedDescricao ||
+              undefined,
+          },
+        );
+
+        /*
+         * Depois de concluir o cadastro
+         * do perfil veterinário, encerramos
+         * essa sessão temporária.
+         */
+        await logoutUser();
       }
 
-      navigation.navigate("Login");
+      navigation.navigate(
+        "Login",
+      );
     } catch (requestError) {
       setRequestError(
         requestError instanceof Error
           ? requestError.message
           : "Não foi possível criar a conta.",
       );
+
+      /*
+       * Garante que um token criado
+       * durante um cadastro que falhou
+       * não fique preso na sessão.
+       */
+      try {
+        await logoutUser();
+      } catch {
+        // Não substitui o erro original.
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -293,7 +392,9 @@ const Register = () => {
         padding: 25,
       }}
     >
-      <Text style={styles_th.title}>
+      <Text
+        style={styles_th.title}
+      >
         Criar conta
       </Text>
 
@@ -316,7 +417,9 @@ const Register = () => {
         <TouchableOpacity
           onPress={() => {
             setRole("TUTOR");
-            setFieldErrors(emptyErrors);
+            setFieldErrors(
+              emptyErrors,
+            );
             setRequestError("");
           }}
           style={{
@@ -336,42 +439,50 @@ const Register = () => {
 
         <TouchableOpacity
           onPress={() => {
-            setRole("VETERINARIO");
-            setFieldErrors(emptyErrors);
+            setRole(
+              "VETERINARIO",
+            );
+            setFieldErrors(
+              emptyErrors,
+            );
             setRequestError("");
           }}
           style={{
             flex: 1,
             padding: 14,
             borderRadius: 12,
+            borderWidth: 1,
             borderColor:
               role === "VETERINARIO"
                 ? "#E53935"
                 : "#ccc",
-            borderWidth: 1,
             alignItems: "center",
           }}
         >
-          <Text>Veterinário</Text>
+          <Text>
+            Veterinário
+          </Text>
         </TouchableOpacity>
       </View>
 
-      {/* NOME */}
       <TextInput
         placeholder="Nome"
         value={nome}
         onChangeText={(value) => {
           setNome(value);
-          clearFieldError("nome");
+          clearFieldError(
+            "nome",
+          );
         }}
         style={[
           styles_th.input,
           {
             marginTop: 15,
             flex: 0,
-            borderColor: fieldErrors.nome
-              ? "#E53935"
-              : undefined,
+            borderColor:
+              fieldErrors.nome
+                ? "#E53935"
+                : undefined,
           },
         ]}
       />
@@ -387,13 +498,14 @@ const Register = () => {
         </Text>
       ) : null}
 
-      {/* EMAIL */}
       <TextInput
         placeholder="Email"
         value={email}
         onChangeText={(value) => {
           setEmail(value);
-          clearFieldError("email");
+          clearFieldError(
+            "email",
+          );
         }}
         autoCapitalize="none"
         keyboardType="email-address"
@@ -402,9 +514,10 @@ const Register = () => {
           {
             marginTop: 10,
             flex: 0,
-            borderColor: fieldErrors.email
-              ? "#E53935"
-              : undefined,
+            borderColor:
+              fieldErrors.email
+                ? "#E53935"
+                : undefined,
           },
         ]}
       />
@@ -420,13 +533,14 @@ const Register = () => {
         </Text>
       ) : null}
 
-      {/* SENHA */}
       <TextInput
         placeholder="Senha (6 a 8 caracteres)"
         value={senha}
         onChangeText={(value) => {
           setSenha(value);
-          clearFieldError("senha");
+          clearFieldError(
+            "senha",
+          );
         }}
         secureTextEntry
         style={[
@@ -434,9 +548,10 @@ const Register = () => {
           {
             marginTop: 10,
             flex: 0,
-            borderColor: fieldErrors.senha
-              ? "#E53935"
-              : undefined,
+            borderColor:
+              fieldErrors.senha
+                ? "#E53935"
+                : undefined,
           },
         ]}
       />
@@ -452,16 +567,16 @@ const Register = () => {
         </Text>
       ) : null}
 
-      {/* TELEFONE */}
       <TextInput
         placeholder="Telefone"
         value={telefone}
         onChangeText={(value) => {
-          const formattedPhone =
-            formatPhone(value);
-
-          setTelefone(formattedPhone);
-          clearFieldError("telefone");
+          setTelefone(
+            formatPhone(value),
+          );
+          clearFieldError(
+            "telefone",
+          );
         }}
         keyboardType="phone-pad"
         maxLength={15}
@@ -470,9 +585,10 @@ const Register = () => {
           {
             marginTop: 10,
             flex: 0,
-            borderColor: fieldErrors.telefone
-              ? "#E53935"
-              : undefined,
+            borderColor:
+              fieldErrors.telefone
+                ? "#E53935"
+                : undefined,
           },
         ]}
       />
@@ -488,16 +604,16 @@ const Register = () => {
         </Text>
       ) : null}
 
-      {/* CAMPOS DO VETERINÁRIO */}
       {role === "VETERINARIO" ? (
         <>
-          {/* CRMV */}
           <TextInput
             placeholder="CRMV"
             value={crmv}
             onChangeText={(value) => {
               setCrmv(value);
-              clearFieldError("crmv");
+              clearFieldError(
+                "crmv",
+              );
             }}
             style={[
               styles_th.input,
@@ -523,12 +639,13 @@ const Register = () => {
             </Text>
           ) : null}
 
-          {/* ESPECIALIDADE */}
           <TextInput
             placeholder="Especialidade"
             value={especialidade}
             onChangeText={(value) => {
-              setEspecialidade(value);
+              setEspecialidade(
+                value,
+              );
               clearFieldError(
                 "especialidade",
               );
@@ -553,17 +670,20 @@ const Register = () => {
                 color: "#E53935",
               }}
             >
-              {fieldErrors.especialidade}
+              {
+                fieldErrors.especialidade
+              }
             </Text>
           ) : null}
 
-          {/* DESCRIÇÃO */}
           <TextInput
             placeholder="Descrição profissional (opcional)"
             value={descricao}
             onChangeText={(value) => {
               setDescricao(value);
-              clearFieldError("descricao");
+              clearFieldError(
+                "descricao",
+              );
             }}
             multiline
             style={[
@@ -572,7 +692,8 @@ const Register = () => {
                 marginTop: 10,
                 minHeight: 120,
                 flex: 0,
-                textAlignVertical: "top",
+                textAlignVertical:
+                  "top",
                 borderColor:
                   fieldErrors.descricao
                     ? "#E53935"
@@ -607,7 +728,9 @@ const Register = () => {
 
       <TouchableOpacity
         disabled={isSubmitting}
-        onPress={() => void handleRegister()}
+        onPress={() =>
+          void handleRegister()
+        }
         style={[
           styles_th.button,
           {
@@ -615,9 +738,10 @@ const Register = () => {
             marginLeft: 0,
             marginTop: 20,
             borderRadius: 16,
-            opacity: isSubmitting
-              ? 0.6
-              : 1,
+            opacity:
+              isSubmitting
+                ? 0.6
+                : 1,
           },
         ]}
       >
@@ -635,7 +759,9 @@ const Register = () => {
 
       <TouchableOpacity
         onPress={() =>
-          navigation.navigate("Login")
+          navigation.navigate(
+            "Login",
+          )
         }
         style={{
           marginTop: 15,

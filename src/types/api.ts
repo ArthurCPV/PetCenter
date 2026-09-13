@@ -15,6 +15,16 @@ export type ApiUserRequest = {
   tipoUsuario: "TUTOR" | "VETERINARIO";
 };
 
+export type ApiUserResponse = {
+  id: number;
+  nome: string;
+  email: string;
+  telefone: string;
+  tipoUsuario: "TUTOR" | "VETERINARIO";
+  ativo: boolean;
+  dataCriacao: string;
+};
+
 export type ApiPetRequest = {
   nome: string;
   especie: string;

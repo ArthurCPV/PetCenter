@@ -12,6 +12,18 @@ import { styles_th } from "../styles/theme";
 
 const MAX_ENTRY_LENGTH = 1000;
 
+const inputBaseStyle = {
+  width: "100%" as const,
+  flexGrow: 0,
+  flexShrink: 0,
+  borderWidth: 1,
+  borderColor: "#C9C9C9",
+  backgroundColor: "#FFFFFF",
+  color: "#222222",
+  fontSize: 16,
+  borderRadius: 14,
+};
+
 type Props = {
   initialText?: string;
   hasTodayEntry: boolean;
@@ -51,26 +63,24 @@ const Form: React.FC<Props> = ({
     }
 
     onSubmit(trimmedText);
-
     setError("");
     setModalVisible(false);
   };
 
   return (
     <>
-      {/* FORMULÁRIO COMPACTO */}
       <View style={styles_th.form}>
         <TouchableOpacity
-          style={{
-            flex: 1,
-          }}
+          style={{ flex: 1 }}
           onPress={openModal}
           activeOpacity={0.8}
         >
           <TextInput
             style={[
               styles_th.input,
+              inputBaseStyle,
               {
+                height: 56,
                 flex: 0,
                 paddingHorizontal: 10,
                 paddingTop: 15,
@@ -86,13 +96,13 @@ const Form: React.FC<Props> = ({
                 ? "Registro de hoje criado"
                 : "Como seu pet está hoje?"
             }
+            placeholderTextColor="#888"
             value=""
             editable={false}
             pointerEvents="none"
           />
         </TouchableOpacity>
 
-        {/* BOTÃO + / EDIÇÃO */}
         <TouchableOpacity
           style={[
             styles_th.button,
@@ -110,7 +120,6 @@ const Form: React.FC<Props> = ({
         </TouchableOpacity>
       </View>
 
-      {/* POPUP */}
       <Modal
         visible={modalVisible}
         transparent
@@ -125,7 +134,6 @@ const Form: React.FC<Props> = ({
             padding: 20,
           }}
         >
-          {/* FUNDO CLICÁVEL */}
           <Pressable
             style={{
               position: "absolute",
@@ -137,15 +145,15 @@ const Form: React.FC<Props> = ({
             onPress={closeModal}
           />
 
-          {/* CONTEÚDO DO POPUP */}
           <View
             style={{
               backgroundColor: "#fff",
               borderRadius: 20,
               padding: 20,
+              maxHeight: "80%",
+              minHeight: 380,
             }}
           >
-            {/* CABEÇALHO */}
             <View
               style={{
                 flexDirection: "row",
@@ -181,29 +189,33 @@ const Form: React.FC<Props> = ({
               </TouchableOpacity>
             </View>
 
-            {/* INPUT GRANDE */}
             <TextInput
               style={[
                 styles_th.input,
+                inputBaseStyle,
                 {
-                  marginTop: 20,
+                  width: "100%",
+                  minHeight: 180,
                   height: 180,
+                  marginTop: 20,
                   paddingHorizontal: 15,
-                  paddingTop: 10,
-                  paddingBottom: 10,
+                  paddingTop: 12,
+                  paddingBottom: 12,
                   textAlignVertical: "top",
-                  borderWidth: error ? 2 : undefined,
-                  borderColor: error ? "#E53935" : undefined,
                 },
+                error
+                  ? {
+                    borderWidth: 2,
+                    borderColor: "#E53935",
+                  }
+                  : undefined,
               ]}
               placeholder="Escreva aqui como seu pet está hoje..."
+              placeholderTextColor="#888"
               value={text}
               onChangeText={(value) => {
                 setText(value);
-
-                if (error) {
-                  setError("");
-                }
+                if (error) setError("");
               }}
               multiline
               numberOfLines={8}
@@ -211,21 +223,20 @@ const Form: React.FC<Props> = ({
               autoFocus
             />
 
-            {/* CONTADOR */}
             <Text
               style={{
                 marginTop: 6,
                 textAlign: "right",
-                color: text.length >= MAX_ENTRY_LENGTH
-                  ? "#E53935"
-                  : "#777",
+                color:
+                  text.length >= MAX_ENTRY_LENGTH
+                    ? "#E53935"
+                    : "#777",
                 fontSize: 12,
               }}
             >
               {text.length}/{MAX_ENTRY_LENGTH}
             </Text>
 
-            {/* ERRO */}
             {error ? (
               <Text
                 style={{
@@ -237,9 +248,8 @@ const Form: React.FC<Props> = ({
               >
                 {error}
               </Text>
-            ) : null}
+            ) : undefined}
 
-            {/* BOTÃO */}
             <TouchableOpacity
               style={[
                 styles_th.button,

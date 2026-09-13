@@ -1,6 +1,6 @@
 import type { DiaryEntry } from "./index";
 
-type HomeStack = {
+export type HomeStack = {
   Welcome: undefined;
   Login: undefined;
   Register: undefined;
@@ -10,11 +10,9 @@ type HomeStack = {
   };
 };
 
-type TabsStack = {
+export type TabsStack = {
   Diary: undefined;
   Alerts: undefined;
   AI: undefined;
   Profile: undefined;
 };
-
-export type { HomeStack, TabsStack };

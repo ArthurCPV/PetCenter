@@ -1,12 +1,13 @@
 import { View, Text } from "react-native";
+
 import {
   useRoute,
-  RouteProp,
+  type RouteProp,
 } from "@react-navigation/native";
 
 import { styles_gb } from "../styles/global";
 
-import { HomeStack } from "../types/navigation";
+import type { HomeStack } from "../types/navigation";
 
 type DetailsRouteProp =
   RouteProp<HomeStack, "Details">;
@@ -16,9 +17,12 @@ const isSameDay = (
   secondDate: Date,
 ): boolean => {
   return (
-    firstDate.getFullYear() === secondDate.getFullYear() &&
-    firstDate.getMonth() === secondDate.getMonth() &&
-    firstDate.getDate() === secondDate.getDate()
+    firstDate.getFullYear() ===
+    secondDate.getFullYear() &&
+    firstDate.getMonth() ===
+    secondDate.getMonth() &&
+    firstDate.getDate() ===
+    secondDate.getDate()
   );
 };
 
@@ -82,7 +86,7 @@ const Details = () => {
       </Text>
 
       <Text style={styles_gb.itemDate}>
-        {entryDate.toLocaleString()}
+        {entryDate.toLocaleString("pt-BR")}
       </Text>
     </View>
   );

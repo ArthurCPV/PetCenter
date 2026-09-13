@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "medvet",
-    "slug": "medvet",
+    "name": "PetCenter",
+    "slug": "PetCenter",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

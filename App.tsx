@@ -1,13 +1,14 @@
 import { NavigationContainer } from "@react-navigation/native";
 
 import Home from "./src/navigation/Home";
+import { AuthProvider } from "./src/auth/AuthContext";
 
-const App = () => {
+export default function App() {
   return (
-    <NavigationContainer>
-      <Home />
-    </NavigationContainer>
+    <AuthProvider>
+      <NavigationContainer>
+        <Home />
+      </NavigationContainer>
+    </AuthProvider>
   );
-};
-
-export default App;
+}

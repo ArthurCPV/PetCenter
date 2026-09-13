@@ -6,19 +6,21 @@ import {
   Image,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import { styles_th } from "../styles/theme";
 
-import { HomeStack } from "../types/navigation";
+import type { HomeStack } from "../types/navigation";
 
-type NavigationProp = NativeStackNavigationProp<
-  HomeStack,
-  "Welcome"
->;
+type NavigationProp =
+  NativeStackNavigationProp<
+    HomeStack,
+    "Welcome"
+  >;
 
 const Welcome = () => {
-  const navigation = useNavigation<NavigationProp>();
+  const navigation =
+    useNavigation<NavigationProp>();
 
   return (
     <View
