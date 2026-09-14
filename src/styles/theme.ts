@@ -14,25 +14,12 @@ export const styles_th = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    paddingTop: 50,
   },
 
   header: {
     paddingHorizontal: 20,
-    marginBottom: 10,
-  },
-
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-  },
-
-  logo: {
-    width: 32,
-    height: 32,
-    resizeMode: "contain",
+    paddingTop: 30,
+    paddingBottom: 15,
   },
 
   title: {
@@ -46,10 +33,18 @@ export const styles_th = StyleSheet.create({
     color: "#777",
   },
 
-  form: {
-    flexDirection: "row",
-    paddingHorizontal: 20,
-    marginBottom: 15,
+  placeholderTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: colors.primary,
+    textAlign: "center",
+  },
+
+  placeholderSub: {
+    fontSize: 12,
+    color: "#999",
+    marginTop: 5,
+    textAlign: "center",
   },
 
   input: {

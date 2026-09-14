@@ -87,7 +87,7 @@ export type ApiRegistroResponse = {
 export type ApiVeterinarianRequest = {
   crmv: string;
   especialidade: string;
-  descricao?: string;
+  descricao: string;
 };
 
 export type ApiVeterinarianResponse = {

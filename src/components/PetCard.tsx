@@ -73,7 +73,7 @@ const PetCard = ({
                   fontWeight: "bold",
                 }}
               >
-                ✎ Editar diário
+                ✎ Editar Diário
               </Text>
             </TouchableOpacity>
           ) : null}

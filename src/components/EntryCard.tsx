@@ -176,7 +176,7 @@ const EntryCard = ({
                   "bold",
               }}
             >
-              ✎ Editar diário
+              ✎ Editar Registro
             </Text>
           </TouchableOpacity>
 
@@ -201,7 +201,7 @@ const EntryCard = ({
                   "bold",
               }}
             >
-              🗑 Excluir diário
+              🗑 Excluir Registro
             </Text>
           </TouchableOpacity>
         </View>

@@ -76,12 +76,6 @@ export const listPetsByUser = async (userId: number): Promise<PetDiary[]> => {
   return response.content.map(toPet);
 };
 
-export const getPet = async (id: string): Promise<PetDiary> => {
-  const response = await request<ApiPetResponse>(`/api/pets/${id}`);
-
-  return toPet(response);
-};
-
 export const updatePet = async (
   id: string,
   data: {

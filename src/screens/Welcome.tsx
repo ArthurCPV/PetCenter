@@ -9,6 +9,7 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
 import { styles_th } from "../styles/theme";
+import { styles_gb } from "../styles/global";
 
 import type { HomeStack } from "../types/navigation";
 
@@ -25,7 +26,7 @@ const Welcome = () => {
   return (
     <View
       style={[
-        styles_th.container,
+        styles_gb.container,
         {
           justifyContent: "center",
           alignItems: "center",

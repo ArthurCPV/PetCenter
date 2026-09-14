@@ -402,11 +402,11 @@ Depois, leia o QR Code com o Expo Go ou execute em um emulador.
 
 ### Repositório GitHub
 
-[Adicionar link do repositório oficial do GitHub Classroom]
+[Adicionar link do repositório oficial do GitHub Classroom](https://github.com/ArthurCPV/PetCenter)
 
 ### Vídeo demonstrativo
 
-[Adicionar link do vídeo publicado no YouTube]
+[Adicionar link do vídeo publicado no YouTube](https://youtu.be/-1Dy5-Xt1R8)
 
 ---
 

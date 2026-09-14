@@ -1,16 +1,10 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { getToken, removeToken } from "../api/api";
+import { removeToken } from "../api/api";
 
 import type { ApiUserResponse } from "../types/api";
 
 const USER_KEY = "PETCENTER_USER";
-
-export const hasStoredToken = async (): Promise<boolean> => {
-  const token = await getToken();
-
-  return token !== null;
-};
 
 export const saveStoredUser = async (user: ApiUserResponse): Promise<void> => {
   await AsyncStorage.setItem(USER_KEY, JSON.stringify(user));

@@ -226,9 +226,7 @@ const RecordFormModal = ({
                                     styles_th.title
                                 }
                             >
-                                {initialData
-                                    ? "Editar registro"
-                                    : "Novo registro"}
+                                Editar registro
                             </Text>
 
                             <TouchableOpacity

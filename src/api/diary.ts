@@ -24,16 +24,6 @@ export const listDiaryEntries = async (): Promise<ApiDiaryResponse[]> => {
   return response.content;
 };
 
-export const listDiaryEntriesByPet = async (
-  petId: string,
-): Promise<DiaryEntry[]> => {
-  const entries = await listDiaryEntries();
-
-  return entries
-    .filter((entry) => String(entry.idPet) === petId)
-    .map(toDiaryEntry);
-};
-
 export const createDiaryEntry = async (
   petId: string,
   text: string,

@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import {
+  Alert,
   ScrollView,
   Text,
   TextInput,
@@ -279,12 +280,12 @@ const Register = () => {
             "A especialidade deve ter entre 3 e 100 caracteres.";
         }
 
-        if (
-          trimmedDescricao &&
-          (
-            trimmedDescricao.length < 10 ||
-            trimmedDescricao.length > 500
-          )
+        if (!trimmedDescricao) {
+          errors.descricao =
+            "Informe uma descrição profissional.";
+        } else if (
+          trimmedDescricao.length < 10 ||
+          trimmedDescricao.length > 500
         ) {
           errors.descricao =
             "A descrição deve ter entre 10 e 500 caracteres.";
@@ -327,6 +328,7 @@ const Register = () => {
         descricao.trim();
 
       setIsSubmitting(true);
+      let currentStep = "iniciar o cadastro";
 
       try {
         await runAuthOperation(
@@ -338,9 +340,11 @@ const Register = () => {
              *
              * Firebase é o primeiro passo.
              *
-             * Se já existir, fazemos login em vez de criar
-             * outra conta.
+             * Se já existir, o cadastro é interrompido para
+             * evitar conta duplicada ou inconsistência entre serviços.
              */
+            currentStep = "criar a conta no Firebase";
+
             try {
               await registerFirebaseUser(
                 trimmedEmail,
@@ -368,12 +372,14 @@ const Register = () => {
              *
              * Tentamos login primeiro.
              *
-             * Se funcionar, o usuário já existe no Java.
-             * Não fazemos POST duplicado.
+             * Se funcionar, o usuário já existe no Java e o
+             * cadastro é interrompido.
              *
              * Se retornar 401/403, consideramos que o usuário
              * ainda não existe no Java e fazemos cadastro.
              */
+            currentStep = "criar o usuário na API Java";
+
             try {
               await loginJava({
                 email: trimmedEmail,
@@ -421,18 +427,20 @@ const Register = () => {
               role === "VETERINARIO" &&
               javaUserWasCreated
             ) {
+              currentStep = "autenticar o usuário na API Java";
+
               await loginJava({
                 email: trimmedEmail,
                 senha,
               });
 
+              currentStep = "criar o perfil de veterinário na API Java";
+
               await createVeterinarianProfile({
                 crmv: trimmedCrmv,
                 especialidade:
                   trimmedEspecialidade,
-                descricao:
-                  trimmedDescricao ||
-                  undefined,
+                descricao: trimmedDescricao,
               });
             }
 
@@ -489,11 +497,16 @@ const Register = () => {
           // Mantém o erro original.
         }
 
-        setRequestError(
+        const errorMessage =
           registerError instanceof Error
             ? registerError.message
-            : "Não foi possível criar a conta.",
-        );
+            : "Não foi possível criar a conta.";
+
+        const message =
+          `Falha ao ${currentStep}: ${errorMessage}`;
+
+        setRequestError(message);
+        Alert.alert("Cadastro não concluído", message);
       } finally {
         setIsSubmitting(false);
       }
@@ -783,7 +796,7 @@ const Register = () => {
           ) : undefined}
 
           <TextInput
-            placeholder="Descrição profissional (opcional)"
+            placeholder="Descrição profissional"
             value={descricao}
             onChangeText={(value) => {
               setDescricao(value);
