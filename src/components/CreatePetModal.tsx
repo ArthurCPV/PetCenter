@@ -242,12 +242,7 @@ const CreatePetModal = ({
       onRequestClose={handleClose}
     >
       <View
-        style={{
-          flex: 1,
-          backgroundColor: "rgba(0,0,0,0.4)",
-          justifyContent: "center",
-          padding: 20,
-        }}
+        style={styles_gb.modalOverlay}
       >
         <Pressable
           style={{

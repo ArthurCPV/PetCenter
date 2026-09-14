@@ -6,6 +6,7 @@ import {
   TextInput,
   TouchableOpacity,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { useNavigation } from "@react-navigation/native";
 import type {
@@ -96,7 +97,7 @@ const Login = () => {
   };
 
   return (
-    <View style={styles_th.container}>
+    <View style={styles_th.screen}>
       <View style={{ padding: 25 }}>
         <Text style={styles_th.title}>
           Entrar

@@ -63,7 +63,7 @@ const Welcome = () => {
           fontSize: 16,
         }}
       >
-        O diário inteligente do seu pet ✨
+        O diário inteligente do seu pet!
       </Text>
 
       <TouchableOpacity

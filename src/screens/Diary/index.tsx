@@ -10,12 +10,12 @@ import {
   View,
   Text,
   FlatList,
-  Modal,
   TouchableOpacity,
   Pressable,
   ScrollView,
   ActivityIndicator,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
 import {
   useFocusEffect,
@@ -744,8 +744,9 @@ const Diary = () => {
               );
             }}
             style={{
-              marginLeft: 20,
-              marginBottom: 10,
+              color: "#fff",
+              fontWeight: "bold",
+              fontSize: 16,
             }}
           >
             <Text
@@ -773,6 +774,7 @@ const Diary = () => {
               selectedPet.name
             }
           </Text>
+        </TouchableOpacity>
 
           {isTutor ? (
             <Form

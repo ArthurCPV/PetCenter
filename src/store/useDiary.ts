@@ -61,6 +61,17 @@ const buildPetsWithEntries = (
   }));
 };
 
+const isSameDay = (a?: string | Date, b?: string | Date) => {
+  if (!a || !b) return false;
+  const da = new Date(a);
+  const db = new Date(b);
+  return (
+    da.getFullYear() === db.getFullYear() &&
+    da.getMonth() === db.getMonth() &&
+    da.getDate() === db.getDate()
+  );
+};
+
 export const useDiary = () => {
   const { user } = useAuth();
 
@@ -347,6 +358,33 @@ export const useDiary = () => {
         ),
       })),
     );
+  };
+
+  const editEntry = (
+    petId: string,
+    entryId: string,
+    updates: Partial<Omit<DiaryEntry, "id" | "createdAt" | "title">>
+  ) => {
+    const updated = pets.map((pet) => {
+      if (pet.id !== petId) return pet;
+
+      const entries = pet.entries.map((e) => {
+        if (e.id !== entryId) return e;
+
+        return {
+          ...e,
+          ...updates,
+        } as DiaryEntry;
+      });
+
+      return {
+        ...pet,
+        entries,
+      };
+    });
+
+    setPets(updated);
+    savePets(updated);
   };
 
   return {
