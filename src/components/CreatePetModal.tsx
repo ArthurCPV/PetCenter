@@ -10,6 +10,7 @@ import {
 } from "react-native";
 
 import { styles_th } from "../styles/theme";
+import { styles_gb } from "../styles/global";
 import type { CreatePetData } from "../types";
 
 type Props = {

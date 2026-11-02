@@ -10,6 +10,7 @@ import {
   View,
   Text,
   FlatList,
+  Modal,
   TouchableOpacity,
   Pressable,
   ScrollView,
@@ -743,11 +744,6 @@ const Diary = () => {
                 undefined,
               );
             }}
-            style={{
-              color: "#fff",
-              fontWeight: "bold",
-              fontSize: 16,
-            }}
           >
             <Text
               style={{
@@ -774,7 +770,6 @@ const Diary = () => {
               selectedPet.name
             }
           </Text>
-        </TouchableOpacity>
 
           {isTutor ? (
             <Form

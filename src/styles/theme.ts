@@ -13,6 +13,11 @@ export const colors = {
 export const styles_th = StyleSheet.create({
   /* BACKGROUND */
 
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+
   screen: {
     flex: 1,
     backgroundColor: colors.background,
@@ -54,49 +59,10 @@ export const styles_th = StyleSheet.create({
   },
 
   placeholderSub: {
-    fontSize: 14,
-    color: "#777",
-  },
-
-  placeholderTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: colors.primary,
-    textAlign: "center",
-  },
-
-  placeholderSub: {
     fontSize: 12,
     color: "#999",
     marginTop: 5,
     textAlign: "center",
-  },
-
-  input: {
-    flex: 1,
-    backgroundColor: colors.card,
-    borderRadius: 20,
-    paddingHorizontal: 15,
-    height: 50,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-
-  button: {
-    backgroundColor: colors.primary,
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: "center",
-    alignItems: "center",
-    marginLeft: 10,
-    elevation: 3,
-  },
-
-  buttonText: {
-    color: "#fff",
-    fontSize: 26,
-    fontWeight: "bold",
   },
 
   emptyText: {
@@ -136,6 +102,12 @@ export const styles_th = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
+  },
+
+  form: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
 
   /* CARD */

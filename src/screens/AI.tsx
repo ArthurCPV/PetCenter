@@ -1,15 +1,44 @@
-import { View, Text } from "react-native";
+import { useState } from "react";
+import {
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 import { styles_gb } from "../styles/global";
 import { styles_th } from "../styles/theme";
 
+type Analysis = {
+  icon: string;
+  title: string;
+  text: string;
+};
+
+const fakeAnalyses: Analysis[] = [
+  {
+    icon: "🐾",
+    title: "Rotina consistente",
+    text: "Os registros indicam uma rotina estável para o seu pet.",
+  },
+  {
+    icon: "💤",
+    title: "Atenção ao descanso",
+    text: "Observe se o seu pet está descansando o suficiente ao longo do dia.",
+  },
+  {
+    icon: "🍽️",
+    title: "Acompanhe a alimentação",
+    text: "Manter horários regulares pode ajudar a identificar mudanças no apetite.",
+  },
+];
+
 const AI = () => {
-  const [analysis, setAnalysis] = useState<any>(null);
+  const [analysis, setAnalysis] = useState<Analysis | null>(null);
 
   const generateAnalysis = () => {
     const random =
       fakeAnalyses[
-        Math.floor(Math.random() * fakeAnalyses.length)
+      Math.floor(Math.random() * fakeAnalyses.length)
       ];
 
     setAnalysis(random);
@@ -101,7 +130,7 @@ const AI = () => {
           Gerar análise
         </Text>
       </TouchableOpacity>
-    </ScrollView>
+    </View>
   );
 };
 

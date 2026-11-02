@@ -3,6 +3,7 @@ export type HomeStack = {
   Login: undefined;
   Register: undefined;
   Home: undefined;
+  Details: { entry: import("./index").DiaryEntry };
 };
 
 export type TabsStack = {

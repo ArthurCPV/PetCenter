@@ -33,14 +33,6 @@ import type {
   Registro,
 } from "../types";
 
-const isSameDay = (firstDate: Date, secondDate: Date): boolean => {
-  return (
-    firstDate.getFullYear() === secondDate.getFullYear() &&
-    firstDate.getMonth() === secondDate.getMonth() &&
-    firstDate.getDate() === secondDate.getDate()
-  );
-};
-
 const isRecordEditable = (createdAt: Date): boolean => {
   return isSameDay(createdAt, new Date());
 };
@@ -61,14 +53,23 @@ const buildPetsWithEntries = (
   }));
 };
 
-const isSameDay = (a?: string | Date, b?: string | Date) => {
-  if (!a || !b) return false;
-  const da = new Date(a);
-  const db = new Date(b);
+const isSameDay = (
+  firstDate?: string | Date,
+  secondDate?: string | Date,
+): boolean => {
+  if (!firstDate || !secondDate) {
+    return false;
+  }
+
+  const first = new Date(firstDate);
+  const second = new Date(secondDate);
+
   return (
-    da.getFullYear() === db.getFullYear() &&
-    da.getMonth() === db.getMonth() &&
-    da.getDate() === db.getDate()
+    !Number.isNaN(first.getTime()) &&
+    !Number.isNaN(second.getTime()) &&
+    first.getFullYear() === second.getFullYear() &&
+    first.getMonth() === second.getMonth() &&
+    first.getDate() === second.getDate()
   );
 };
 
@@ -363,7 +364,7 @@ export const useDiary = () => {
   const editEntry = (
     petId: string,
     entryId: string,
-    updates: Partial<Omit<DiaryEntry, "id" | "createdAt" | "title">>
+    updates: Partial<Omit<DiaryEntry, "id" | "createdAt" | "title">>,
   ) => {
     const updated = pets.map((pet) => {
       if (pet.id !== petId) return pet;
@@ -384,7 +385,6 @@ export const useDiary = () => {
     });
 
     setPets(updated);
-    savePets(updated);
   };
 
   return {
