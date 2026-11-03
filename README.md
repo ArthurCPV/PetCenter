@@ -39,7 +39,7 @@ O objetivo é facilitar o acompanhamento diário do animal e oferecer ao veterin
 | ✅ Visão do veterinário | Consulta de pets e diários autorizados |
 | ✅ Estados de carregamento | Indicadores durante carregamento e atualização |
 | ✅ Atualização da interface | Dados atualizados após operações bem-sucedidas |
-| ⏳ Assistente de IA | Tela reservada para a API própria do grupo na Sprint 4 |
+| ⚠️ Assistente de IA | Chat integrado; consultas aos dados IoT dependem da API e do ESP32 estarem acessíveis |
 
 > A API atualmente publicada disponibiliza a operação de desativação de alertas, mas não publica uma rota de reativação. Por isso, alertas desativados são exibidos como `Desativado` no aplicativo.
 
@@ -136,11 +136,13 @@ A reativação depende de um endpoint que não está disponível no Swagger atua
 
 ## 🤖 Assistente de IA
 
-A tela de IA está preparada na navegação, mas permanece em desenvolvimento enquanto a API de IA criada pelo grupo não estiver publicada.
+A tela de IA oferece um chat com a API CLYVO VET. As perguntas são enviadas para `POST /chat` como `{ "message": "..." }`, e a interface exibe o campo `response` retornado pelo backend. Exemplos incluem perguntas sobre visitas aos recipientes de comida e água e comparações disponíveis no histórico IoT.
 
-Não foi adicionada uma API genérica externa nem uma resposta mockada. Essa decisão mantém a integração coerente com o escopo do projeto e evita apresentar como funcionalidade real algo que ainda não possui backend integrado.
+O assistente depende da API CLYVO VET e da conexão dessa API aos dados do ESP32/Wokwi. Se o serviço não conseguir processar uma pergunta, o app apresenta uma mensagem de erro e não inventa uma resposta.
 
-A integração do assistente será realizada na Sprint 4, após a publicação e definição do contrato da API própria do grupo.
+O contrato publicado confirma `POST /chat`; a raiz da API pode responder `Not Found` por não possuir uma rota `/`. Na validação atual, a API respondeu a uma saudação, mas falhou ao processar uma pergunta que exige dados IoT. A integração ponta a ponta desses dados ainda precisa ser validada.
+
+Os sensores registram interações com recipientes; as respostas não são diagnóstico veterinário e não substituem a avaliação de um profissional.
 
 ---
 
@@ -298,6 +300,8 @@ Todas as operações protegidas enviam o token JWT no cabeçalho `Authorization`
 
 O endereço pode ser sobrescrito pela variável `EXPO_PUBLIC_API_URL`. Se ela não estiver definida, o app usa o endereço Render acima.
 
+A API do assistente é configurada separadamente por `EXPO_PUBLIC_AI_API_URL`. O padrão é `https://challenger-iot.onrender.com`.
+
 ---
 
 ## 🚀 Como Utilizar o Aplicativo
@@ -332,6 +336,7 @@ Instale:
 
 ```env
 EXPO_PUBLIC_API_URL=https://seu-endereco-da-api
+EXPO_PUBLIC_AI_API_URL=https://challenger-iot.onrender.com
 ```
 
 O endereço deve apontar para a raiz da API, sem adicionar `/api`.
@@ -382,7 +387,7 @@ Depois, leia o QR Code com o Expo Go ou execute em um emulador.
 | CRUD de pets | Implementado |
 | CRUD de entradas do diário | Implementado |
 | Registros de acompanhamento | Consulta, edição e exclusão implementadas na interface |
-| Assistente de IA | Planejado para a Sprint 4, aguardando API própria |
+| Assistente de IA | Chat integrado; processamento de perguntas IoT depende da API e da conexão com o ESP32 |
 | Estados de carregamento | Implementado |
 | Componentização | Implementado |
 | Atualização após mutações | Implementado |

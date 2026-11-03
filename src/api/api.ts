@@ -10,6 +10,7 @@ const TOKEN_KEY = "PETCENTER_TOKEN";
 
 type RequestOptions = RequestInit & {
   authenticated?: boolean;
+  baseUrl?: string;
 };
 
 export class ApiHttpError extends Error {
@@ -77,7 +78,12 @@ export const request = async <T>(
   endpoint: string,
   options: RequestOptions = {},
 ): Promise<T> => {
-  const { authenticated = true, headers, ...fetchOptions } = options;
+  const {
+    authenticated = true,
+    baseUrl = API_URL,
+    headers,
+    ...fetchOptions
+  } = options;
 
   const requestHeaders = new Headers(headers);
   requestHeaders.set("Content-Type", "application/json");
@@ -96,7 +102,7 @@ export const request = async <T>(
   let response: Response;
 
   try {
-    response = await fetch(`${API_URL}${endpoint}`, {
+    response = await fetch(`${baseUrl.replace(/\/+$/, "")}${endpoint}`, {
       ...fetchOptions,
       headers: requestHeaders,
     });
