@@ -46,9 +46,11 @@ export const logout = async (): Promise<void> => {
   await removeToken();
 };
 
-export const registerUser = async (data: ApiUserRequest): Promise<void> => {
+export const registerUser = async (
+  data: ApiUserRequest,
+): Promise<ApiUserResponse> => {
   try {
-    await request<void>("/api/users", {
+    return await request<ApiUserResponse>("/api/users", {
       method: "POST",
       authenticated: false,
       body: JSON.stringify(data),

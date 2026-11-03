@@ -1,6 +1,10 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export const API_URL = "https://challenge-java-petcenter.onrender.com";
+const DEFAULT_API_URL = "https://challenge-java-petcenter.onrender.com";
+
+export const API_URL = (
+  process.env.EXPO_PUBLIC_API_URL?.trim() || DEFAULT_API_URL
+).replace(/\/+$/, "");
 
 const TOKEN_KEY = "PETCENTER_TOKEN";
 
@@ -18,6 +22,13 @@ export class ApiHttpError extends Error {
   }
 }
 
+export class ApiConnectionError extends Error {
+  constructor() {
+    super("Não foi possível conectar à API. Verifique sua conexão e tente novamente.");
+    this.name = "ApiConnectionError";
+  }
+}
+
 export const getToken = async (): Promise<string | null> => {
   return AsyncStorage.getItem(TOKEN_KEY);
 };
@@ -31,6 +42,10 @@ export const removeToken = async (): Promise<void> => {
 };
 
 const extractErrorMessage = (body: unknown, status: number): string => {
+  if (typeof body === "string" && body.trim()) {
+    return body.trim();
+  }
+
   if (typeof body === "object" && body !== null) {
     if ("message" in body && typeof body.message === "string") {
       return body.message;
@@ -78,18 +93,31 @@ export const request = async <T>(
     requestHeaders.delete("Authorization");
   }
 
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    ...fetchOptions,
-    headers: requestHeaders,
-  });
+  let response: Response;
+
+  try {
+    response = await fetch(`${API_URL}${endpoint}`, {
+      ...fetchOptions,
+      headers: requestHeaders,
+    });
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new ApiConnectionError();
+    }
+
+    throw error;
+  }
 
   if (!response.ok) {
+    const responseText = await response.text();
     let responseBody: unknown | undefined;
 
-    try {
-      responseBody = await response.json();
-    } catch {
-      responseBody = undefined;
+    if (responseText) {
+      try {
+        responseBody = JSON.parse(responseText);
+      } catch {
+        responseBody = responseText;
+      }
     }
 
     throw new ApiHttpError(

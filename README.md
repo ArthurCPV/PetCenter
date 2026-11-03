@@ -18,7 +18,7 @@ A aplicação permite:
 * consultar e gerenciar registros de acompanhamento existentes;
 * consultar alertas associados aos pets;
 * diferenciar as permissões de tutores e veterinários;
-* autenticar usuários com Firebase e API Java.
+* autenticar usuários pela API Java com token JWT.
 
 O objetivo é facilitar o acompanhamento diário do animal e oferecer ao veterinário uma visão dos dados compartilhados pelo tutor.
 
@@ -29,7 +29,7 @@ O objetivo é facilitar o acompanhamento diário do animal e oferecer ao veterin
 | Funcionalidade | Descrição |
 | --- | --- |
 | ✅ Cadastro de usuário | Criação de conta de tutor ou veterinário |
-| ✅ Login real | Firebase Authentication integrado à API Java |
+| ✅ Login real | API Java com autenticação JWT |
 | ✅ Persistência de sessão | Token e usuário armazenados localmente |
 | ✅ Proteção de rotas | Telas internas disponíveis somente após autenticação |
 | ✅ Gestão de pets | Cadastro, consulta, edição e exclusão |
@@ -148,10 +148,9 @@ A integração do assistente será realizada na Sprint 4, após a publicação e
 
 O fluxo de autenticação utiliza duas camadas:
 
-1. **Firebase Authentication**, responsável pela autenticação externa;
-2. **API Java**, responsável pelo login, token e dados persistidos do usuário.
+1. **API Java**, responsável pelo cadastro, validação de credenciais e emissão do token JWT.
 
-A sessão é armazenada usando AsyncStorage. Ao reabrir o aplicativo, o Firebase é verificado e a sessão Java é validada antes da entrada nas telas protegidas.
+A sessão e os dados básicos do usuário são armazenados usando AsyncStorage. Ao reabrir o aplicativo, o token é validado pela API antes da entrada nas telas protegidas.
 
 ### Perfis
 
@@ -174,7 +173,6 @@ PetCenter/
 │   │   ├── api.ts
 │   │   ├── auth.ts
 │   │   ├── diary.ts
-│   │   ├── firebaseAuth.ts
 │   │   ├── pets.ts
 │   │   └── records.ts
 │   ├── auth/
@@ -213,7 +211,6 @@ PetCenter/
 │       └── navigation.ts
 ├── App.tsx
 ├── app.json
-├── firebaseConfig.ts
 ├── index.ts
 ├── package.json
 └── tsconfig.json
@@ -299,6 +296,8 @@ PATCH /api/alertas/{id}/desativar
 
 Todas as operações protegidas enviam o token JWT no cabeçalho `Authorization`.
 
+O endereço pode ser sobrescrito pela variável `EXPO_PUBLIC_API_URL`. Se ela não estiver definida, o app usa o endereço Render acima.
+
 ---
 
 ## 🚀 Como Utilizar o Aplicativo
@@ -329,7 +328,13 @@ Instale:
 * Expo CLI ou use o Expo via `npx`;
 * Expo Go em um dispositivo Android/iOS ou um emulador compatível.
 
-É necessário que o backend Java esteja acessível e que o projeto Firebase configurado em `firebaseConfig.ts` esteja disponível para autenticação.
+É necessário que o backend Java esteja acessível. Para usar outra instância da API, crie um arquivo `.env.local` na raiz com:
+
+```env
+EXPO_PUBLIC_API_URL=https://seu-endereco-da-api
+```
+
+O endereço deve apontar para a raiz da API, sem adicionar `/api`.
 
 ## Clonando o repositório
 
@@ -372,7 +377,7 @@ Depois, leia o QR Code com o Expo Go ou execute em um emulador.
 | Navegação por rotas | Implementado |
 | Mais de seis telas | Implementado |
 | Consumo de API REST | Implementado |
-| Autenticação real | Firebase + API Java |
+| Autenticação real | API Java + JWT |
 | Proteção de telas | Implementado |
 | CRUD de pets | Implementado |
 | CRUD de entradas do diário | Implementado |

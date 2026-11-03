@@ -18,24 +18,10 @@ import type {
 import {
   createVeterinarianProfile,
   deleteUserAccount,
-  getUserByEmail,
   login as loginJava,
   logout as logoutJava,
   registerUser,
 } from "../api/auth";
-
-import {
-  ApiHttpError,
-} from "../api/api";
-
-import {
-  FirebaseEmailAlreadyInUseError,
-  deleteCurrentFirebaseUser,
-  logoutFirebaseUser,
-  registerFirebaseUser,
-} from "../api/firebaseAuth";
-
-import { useAuth } from "../auth/AuthContext";
 
 import type {
   UserRole,
@@ -125,10 +111,6 @@ const Register = () => {
   const navigation =
     useNavigation<NavigationProp>();
 
-  const {
-    runAuthOperation,
-  } = useAuth();
-
   const [role, setRole] =
     useState<UserRole>("TUTOR");
 
@@ -164,7 +146,6 @@ const Register = () => {
   const [isSubmitting, setIsSubmitting] =
     useState(false);
 
-  let firebaseUserWasCreated = false;
   let javaUserWasCreated = false;
 
   const clearFieldError = (
@@ -238,12 +219,9 @@ const Register = () => {
       if (!senha) {
         errors.senha =
           "Informe sua senha.";
-      } else if (
-        senha.length < 6 ||
-        senha.length > 8
-      ) {
+      } else if (senha.length < 6) {
         errors.senha =
-          "A senha deve ter entre 6 e 8 caracteres.";
+          "A senha deve ter pelo menos 6 caracteres.";
       }
 
       if (!phoneNumbers) {
@@ -328,173 +306,57 @@ const Register = () => {
         descricao.trim();
 
       setIsSubmitting(true);
-      let currentStep = "iniciar o cadastro";
+      let currentStep = "criar o usuário na API Java";
+      let createdUserId: number | undefined;
+      let javaUserWasCreated = false;
 
       try {
-        await runAuthOperation(
-          async (): Promise<void> => {
-            /*
-             * --------------------------------------------------
-             * 1. GARANTIR A CONTA FIREBASE
-             * --------------------------------------------------
-             *
-             * Firebase é o primeiro passo.
-             *
-             * Se já existir, o cadastro é interrompido para
-             * evitar conta duplicada ou inconsistência entre serviços.
-             */
-            currentStep = "criar a conta no Firebase";
+        const createdUser = await registerUser({
+          nome: trimmedNome,
+          email: trimmedEmail,
+          senha,
+          telefone: phoneNumbers,
+          tipoUsuario: role,
+        });
 
-            try {
-              await registerFirebaseUser(
-                trimmedEmail,
-                senha,
-              );
+        createdUserId = createdUser.id;
+        javaUserWasCreated = true;
 
-              firebaseUserWasCreated = true;
-            } catch (firebaseError) {
-              if (
-                firebaseError instanceof
-                FirebaseEmailAlreadyInUseError
-              ) {
-                throw new Error(
-                  "Este e-mail já está cadastrado.",
-                );
-              } else {
-                throw firebaseError;
-              }
-            }
+        if (role === "VETERINARIO") {
+          currentStep = "autenticar o usuário na API Java";
+          await loginJava({ email: trimmedEmail, senha });
 
-            /*
-             * --------------------------------------------------
-             * 2. VERIFICAR O USUÁRIO NO JAVA
-             * --------------------------------------------------
-             *
-             * Tentamos login primeiro.
-             *
-             * Se funcionar, o usuário já existe no Java e o
-             * cadastro é interrompido.
-             *
-             * Se retornar 401/403, consideramos que o usuário
-             * ainda não existe no Java e fazemos cadastro.
-             */
-            currentStep = "criar o usuário na API Java";
+          currentStep = "criar o perfil de veterinário na API Java";
+          await createVeterinarianProfile({
+            crmv: trimmedCrmv,
+            especialidade: trimmedEspecialidade,
+            descricao: trimmedDescricao,
+          });
+        }
 
-            try {
-              await loginJava({
-                email: trimmedEmail,
-                senha,
-              });
-              throw new Error(
-                "Este e-mail já está cadastrado.",
-              );
-            } catch (javaError) {
-              if (
-                javaError instanceof
-                ApiHttpError &&
-                (
-                  javaError.status === 401 ||
-                  javaError.status === 403
-                )
-              ) {
-                await registerUser({
-                  nome: trimmedNome,
-                  email: trimmedEmail,
-                  senha,
-                  telefone:
-                    phoneNumbers,
-                  tipoUsuario: role,
-                });
-
-                javaUserWasCreated = true;
-              } else {
-                throw javaError;
-              }
-            }
-
-            /*
-             * --------------------------------------------------
-             * 3. PERFIL DE VETERINÁRIO
-             * --------------------------------------------------
-             *
-             * Só criamos o perfil quando o usuário Java
-             * realmente acabou de ser criado.
-             *
-             * Se a conta já existia, não tentamos criar o mesmo
-             * perfil novamente.
-             */
-            if (
-              role === "VETERINARIO" &&
-              javaUserWasCreated
-            ) {
-              currentStep = "autenticar o usuário na API Java";
-
-              await loginJava({
-                email: trimmedEmail,
-                senha,
-              });
-
-              currentStep = "criar o perfil de veterinário na API Java";
-
-              await createVeterinarianProfile({
-                crmv: trimmedCrmv,
-                especialidade:
-                  trimmedEspecialidade,
-                descricao: trimmedDescricao,
-              });
-            }
-
-            await logoutJava();
-
-            /*
-             * Cadastro concluído nos dois sistemas.
-             */
-            await logoutFirebaseUser();
-          },
-        );
+        await logoutJava();
 
         navigation.navigate("Login");
       } catch (registerError) {
-        /*
-         * Se esta tentativa criou a conta Firebase, desfazemos
-         * essa criação quando o cadastro Java não conclui.
-         * Assim evitamos uma conta órfã em apenas um sistema.
-         */
-        if (javaUserWasCreated) {
+        if (javaUserWasCreated && createdUserId !== undefined) {
           try {
-            await loginJava({
-              email: trimmedEmail,
-              senha,
-            });
-
-            const createdUser = await getUserByEmail(
-              trimmedEmail,
+            await loginJava({ email: trimmedEmail, senha });
+            await deleteUserAccount(createdUserId);
+          } catch (cleanupError) {
+            console.error(
+              "Não foi possível remover a conta criada parcialmente:",
+              cleanupError,
             );
-
-            await deleteUserAccount(createdUser.id);
-          } catch {
-            // Mantém o erro original do cadastro.
-          }
-        }
-
-        if (firebaseUserWasCreated) {
-          try {
-            await deleteCurrentFirebaseUser();
-          } catch {
-            // Mantém o erro original do cadastro.
           }
         }
 
         try {
           await logoutJava();
-        } catch {
-          // Mantém o erro original.
-        }
-
-        try {
-          await logoutFirebaseUser();
-        } catch {
-          // Mantém o erro original.
+        } catch (logoutError) {
+          console.error(
+            "Não foi possível limpar o token após o cadastro:",
+            logoutError,
+          );
         }
 
         const errorMessage =
