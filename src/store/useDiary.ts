@@ -222,7 +222,12 @@ export const useDiary = () => {
       );
     }
 
-    const updatedEntry = await updateDiaryEntry(entryId, petId, text);
+    const updatedEntry = await updateDiaryEntry(
+      entryId,
+      petId,
+      entry.entryDate,
+      text,
+    );
 
     setPets((currentPets) =>
       updatePetInList(currentPets, petId, (pet) => ({

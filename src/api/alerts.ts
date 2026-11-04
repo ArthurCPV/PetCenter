@@ -1,21 +1,7 @@
 import { request } from "./api";
 
-import type {
-  ApiAlertRequest,
-  ApiAlertResponse,
-  ApiPage,
-  ApiAlertType,
-} from "../types/api";
-
-export type CreateAlertData = {
-  petId: string;
-  type: ApiAlertType;
-  title: string;
-  description?: string;
-  startDate: string;
-  frequencyHours?: number;
-  endDate?: string;
-};
+import type { CreateAlertData } from "../types";
+import type { ApiAlertRequest, ApiAlertResponse, ApiPage } from "../types/api";
 
 export const listAlerts = async (): Promise<ApiAlertResponse[]> => {
   const response = await request<ApiPage<ApiAlertResponse>>(

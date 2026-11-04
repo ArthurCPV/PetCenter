@@ -1,5 +1,7 @@
 import type { ApiAlertResponse, ApiAlertType } from "./api";
 
+export type { UserRole } from "./api";
+
 export type Registro = {
   id: string;
   entryId: string;
@@ -45,8 +47,6 @@ export type CreateRecordData = {
   note?: string;
 };
 
-export type Alerta = ApiAlertResponse;
-
 export type CreateAlertData = {
   petId: string;
   type: ApiAlertType;
@@ -56,3 +56,5 @@ export type CreateAlertData = {
   frequencyHours?: number;
   endDate?: string;
 };
+
+export type Alerta = ApiAlertResponse;

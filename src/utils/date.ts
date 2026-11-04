@@ -71,3 +71,17 @@ export const getEntryTitle = (entryDate: Date): string => {
 
 export const formatDateTime = (date: string | Date): string =>
   new Date(date).toLocaleString("pt-BR");
+
+export const formatDate = (value: string): string => {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Data não disponível";
+  }
+
+  return date.toLocaleDateString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};

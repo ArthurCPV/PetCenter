@@ -14,7 +14,12 @@ export const toDiaryEntry = (entry: ApiDiaryResponse): DiaryEntry => ({
 });
 
 const getToday = (): string => {
-  return new Date().toISOString().slice(0, 10);
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, "0");
+  const day = String(today.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 };
 
 export const listDiaryEntries = async (): Promise<ApiDiaryResponse[]> => {
@@ -47,11 +52,12 @@ export const createDiaryEntry = async (
 export const updateDiaryEntry = async (
   id: string,
   petId: string,
+  entryDate: string,
   text: string,
 ): Promise<DiaryEntry> => {
   const payload: ApiDiaryRequest = {
     petId: Number(petId),
-    data: getToday(),
+    data: entryDate.slice(0, 10),
     resumo: text,
     status: "COMPLETO",
   };

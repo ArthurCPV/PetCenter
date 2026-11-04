@@ -1,7 +1,4 @@
-import {
-  useCallback,
-  useState,
-} from "react";
+import { useCallback } from "react";
 import {
   ScrollView,
   Text,
@@ -11,53 +8,14 @@ import {
 import { useFocusEffect } from "@react-navigation/native";
 
 import { useAuth } from "../auth/AuthContext";
-import { listPetsByUser } from "../api/pets";
 import { styles_gb } from "../styles/global";
 import InfoCard from "../components/InfoCard";
-
-type PetCountState =
-  | { status: "loading" }
-  | { status: "ready"; count: number }
-  | { status: "error" };
-
-const formatDate = (value: string): string => {
-  const date = new Date(value);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Data não disponível";
-  }
-
-  return date.toLocaleDateString("pt-BR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-};
+import { usePetCount } from "../store/usePetCount";
+import { formatDate } from "../utils/date";
 
 const Profile = () => {
   const { user, logoutUser } = useAuth();
-
-  const [petCountState, setPetCountState] =
-    useState<PetCountState>({ status: "loading" });
-
-  const loadPetCount = useCallback(async () => {
-    if (!user || user.tipoUsuario !== "TUTOR") {
-      setPetCountState({ status: "ready", count: 0 });
-      return;
-    }
-
-    setPetCountState({ status: "loading" });
-
-    try {
-      const pets = await listPetsByUser(user.id);
-      setPetCountState({
-        status: "ready",
-        count: pets.length,
-      });
-    } catch {
-      setPetCountState({ status: "error" });
-    }
-  }, [user]);
+  const { state: petCountState, load: loadPetCount } = usePetCount(user);
 
   useFocusEffect(
     useCallback(() => {

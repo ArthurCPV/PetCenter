@@ -20,10 +20,9 @@ import {
 import type {
   ApiUserResponse,
 } from "../types/api";
+import type { UserRole } from "../types";
 
-export type UserRole =
-  | "TUTOR"
-  | "VETERINARIO";
+export type { UserRole } from "../types";
 
 type AuthContextData = {
   isAuthenticated: boolean;

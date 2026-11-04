@@ -1,3 +1,5 @@
+export type UserRole = "TUTOR" | "VETERINARIO";
+
 export type ApiLoginRequest = {
   email: string;
   senha: string;
@@ -12,7 +14,7 @@ export type ApiUserRequest = {
   email: string;
   senha: string;
   telefone: string;
-  tipoUsuario: "TUTOR" | "VETERINARIO";
+  tipoUsuario: UserRole;
 };
 
 export type ApiUserResponse = {
@@ -20,7 +22,7 @@ export type ApiUserResponse = {
   nome: string;
   email: string;
   telefone: string;
-  tipoUsuario: "TUTOR" | "VETERINARIO";
+  tipoUsuario: UserRole;
   ativo: boolean;
   dataCriacao: string;
 };

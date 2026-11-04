@@ -15,6 +15,7 @@ import type {
 import { useAuth } from "../auth/AuthContext";
 
 import { styles_th } from "../styles/theme";
+import { isValidEmail } from "../utils/validation";
 
 import type { HomeStack } from "../types/navigation";
 
@@ -23,15 +24,6 @@ type NavigationProp =
     HomeStack,
     "Login"
   >;
-
-const isValidEmail = (
-  value: string,
-): boolean => {
-  const emailRegex =
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-  return emailRegex.test(value);
-};
 
 const Login = () => {
   const navigation =

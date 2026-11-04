@@ -5,6 +5,7 @@ import {
   cancelAlertNotifications,
   enableAlertNotifications,
   hasAlertNotificationPermission,
+  sendAlertNotificationNow,
   synchronizeAlertNotifications,
 } from "../notifications/alertNotifications";
 
@@ -181,6 +182,19 @@ const useAlertNotifications = (
     }
   }, [alerts, userId]);
 
+  const notifyNow = useCallback(
+    async (alert: Alerta): Promise<void> => {
+      if (userId === undefined) {
+        throw new Error("Faça login como tutor para enviar a notificação.");
+      }
+
+      await sendAlertNotificationNow(userId, alert);
+      setPermission({ userId, granted: true, loaded: true });
+      setError(undefined);
+    },
+    [userId],
+  );
+
   return {
     hasPermission:
       permission.userId === userId &&
@@ -191,6 +205,7 @@ const useAlertNotifications = (
       permission.userId !== userId,
     error,
     enable,
+    notifyNow,
   };
 };
 

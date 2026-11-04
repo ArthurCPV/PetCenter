@@ -15,23 +15,14 @@ import type {
   NativeStackNavigationProp,
 } from "@react-navigation/native-stack";
 
-import {
-  createVeterinarianProfile,
-  deleteUserAccount,
-  login as loginJava,
-  logout as logoutJava,
-  registerUser,
-} from "../api/auth";
-
-import type {
-  UserRole,
-} from "../auth/AuthContext";
-
 import { styles_th } from "../styles/theme";
+import { useRegistration } from "../store/useRegistration";
 
 import type {
   HomeStack,
 } from "../types/navigation";
+import type { UserRole } from "../types";
+import { isValidEmail } from "../utils/validation";
 
 type NavigationProp =
   NativeStackNavigationProp<
@@ -110,6 +101,7 @@ const formatPhone = (
 const Register = () => {
   const navigation =
     useNavigation<NavigationProp>();
+  const { register } = useRegistration();
 
   const [role, setRole] =
     useState<UserRole>("TUTOR");
@@ -196,13 +188,8 @@ const Register = () => {
         errors.email =
           "Informe seu e-mail.";
       } else {
-        const emailRegex =
-          /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
         if (
-          !emailRegex.test(
-            trimmedEmail,
-          )
+          !isValidEmail(trimmedEmail)
         ) {
           errors.email =
             "Informe um e-mail válido.";
@@ -304,69 +291,35 @@ const Register = () => {
         descricao.trim();
 
       setIsSubmitting(true);
-      let currentStep = "criar o usuário na API Java";
-      let createdUserId: number | undefined;
-      let javaUserWasCreated = false;
 
       try {
-        const createdUser = await registerUser({
-          nome: trimmedNome,
-          email: trimmedEmail,
-          senha,
-          telefone: phoneNumbers,
-          tipoUsuario: role,
+        await register({
+          user: {
+            nome: trimmedNome,
+            email: trimmedEmail,
+            senha,
+            telefone: phoneNumbers,
+            tipoUsuario: role,
+          },
+          veterinarian:
+            role === "VETERINARIO"
+              ? {
+                  crmv: trimmedCrmv,
+                  especialidade: trimmedEspecialidade,
+                  descricao: trimmedDescricao,
+                }
+              : undefined,
         });
-
-        createdUserId = createdUser.id;
-        javaUserWasCreated = true;
-
-        if (role === "VETERINARIO") {
-          currentStep = "autenticar o usuário na API Java";
-          await loginJava({ email: trimmedEmail, senha });
-
-          currentStep = "criar o perfil de veterinário na API Java";
-          await createVeterinarianProfile({
-            crmv: trimmedCrmv,
-            especialidade: trimmedEspecialidade,
-            descricao: trimmedDescricao,
-          });
-        }
-
-        await logoutJava();
 
         navigation.navigate("Login");
       } catch (registerError) {
-        if (javaUserWasCreated && createdUserId !== undefined) {
-          try {
-            await loginJava({ email: trimmedEmail, senha });
-            await deleteUserAccount(createdUserId);
-          } catch (cleanupError) {
-            console.error(
-              "Não foi possível remover a conta criada parcialmente:",
-              cleanupError,
-            );
-          }
-        }
-
-        try {
-          await logoutJava();
-        } catch (logoutError) {
-          console.error(
-            "Não foi possível limpar o token após o cadastro:",
-            logoutError,
-          );
-        }
-
         const errorMessage =
           registerError instanceof Error
             ? registerError.message
             : "Não foi possível criar a conta.";
 
-        const message =
-          `Falha ao ${currentStep}: ${errorMessage}`;
-
-        setRequestError(message);
-        Alert.alert("Cadastro não concluído", message);
+        setRequestError(errorMessage);
+        Alert.alert("Cadastro não concluído", errorMessage);
       } finally {
         setIsSubmitting(false);
       }

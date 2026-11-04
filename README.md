@@ -2,7 +2,7 @@
 
 Aplicativo mobile desenvolvido em **React Native com Expo** para acompanhamento da rotina e da saúde de animais de estimação.
 
-O projeto foi desenvolvido como a Sprint 3 que é parte do **Challenge FIAP 2026**, integrando autenticação, navegação mobile, consumo de API REST, gerenciamento de estado e operações de cadastro, consulta, edição e exclusão de dados.
+Entrega final do projeto integrado do **Challenge FIAP 2026**, desenvolvido em React Native com Expo. O aplicativo integra autenticação, navegação mobile, consumo de API REST, gerenciamento de estado e operações de cadastro, consulta, edição e exclusão de dados.
 
 ---
 
@@ -136,7 +136,7 @@ O app oculta as ações de gerenciamento para tutores e também as bloqueia na c
 
 ### Notificações locais
 
-Quando a permissão do sistema ainda não foi concedida, a tela de Alertas oferece a opção de ativá-la. Com a permissão concedida, essa opção desaparece e o app agenda notificações locais neste aparelho: alertas com frequência se repetem no intervalo definido pelo veterinário; sem frequência, geram um lembrete único. A permissão é mantida pelo Android ou iOS e pode ser revogada nas configurações do dispositivo; ao voltar ao app, o estado é verificado novamente. Desativar um alerta pelo veterinário cancela os lembretes locais correspondentes na próxima sincronização da tela. As notificações não são push.
+Quando a permissão do sistema ainda não foi concedida, a tela de Alertas oferece a opção de ativá-la. Com a permissão concedida, o app agenda notificações locais neste aparelho: alertas com frequência se repetem no intervalo definido pelo veterinário; sem frequência, geram um lembrete único. O tutor também pode tocar em **Notificar agora** em um alerta ativo para receber imediatamente uma notificação local relacionada àquele alerta, sem alterar os lembretes recorrentes agendados. A permissão é mantida pelo Android ou iOS e pode ser revogada nas configurações do dispositivo; ao voltar ao app, o estado é verificado novamente. Desativar um alerta pelo veterinário cancela os lembretes locais recorrentes correspondentes na próxima sincronização da tela. As notificações não são push.
 
 ---
 
@@ -153,8 +153,9 @@ Esta integração foi desenvolvida originalmente para outra disciplina e ainda n
 O fluxo de autenticação utiliza duas camadas:
 
 1. **API Java**, responsável pelo cadastro, validação de credenciais e emissão do token JWT.
+2. **Armazenamento local**, que mantém o token e os dados básicos da sessão usando AsyncStorage.
 
-A sessão e os dados básicos do usuário são armazenados usando AsyncStorage. Ao reabrir o aplicativo, o token é validado pela API antes da entrada nas telas protegidas.
+Ao reabrir o aplicativo, a sessão armazenada é validada pela API antes da entrada nas telas protegidas.
 
 ### Perfis
 
@@ -170,11 +171,16 @@ A sessão e os dados básicos do usuário são armazenados usando AsyncStorage. 
 ```txt
 PetCenter/
 ├── assets/
-│   └── icons/
+│   ├── icons/
+│   ├── adaptive-icon.png
+│   ├── favicon.png
+│   ├── icon.png
+│   └── splash-icon.png
 ├── src/
 │   ├── api/
 │   │   ├── alerts.ts
 │   │   ├── api.ts
+│   │   ├── assistant.ts
 │   │   ├── auth.ts
 │   │   ├── diary.ts
 │   │   ├── pets.ts
@@ -185,22 +191,26 @@ PetCenter/
 │   ├── components/
 │   │   ├── AlertFormModal.tsx
 │   │   ├── CreatePetModal.tsx
-│   │   ├── DiaryEntryEditModal.tsx
+│   │   ├── DiaryTextModal.tsx
 │   │   ├── EntryCard.tsx
+│   │   ├── EntryDetailsModal.tsx
 │   │   ├── Form.tsx
-│   │   ├── Item.tsx
+│   │   ├── InfoCard.tsx
+│   │   ├── ModalShell.tsx
+│   │   ├── OutlineButton.tsx
 │   │   ├── PetCard.tsx
 │   │   ├── PetFilter.tsx
 │   │   ├── RecordFormModal.tsx
 │   │   └── SelectDropdown.tsx
-│   ├── notifications/
-│   │   └── alertNotifications.ts
+│   ├── constants/
+│   │   └── alerts.ts
 │   ├── navigation/
 │   │   └── Home.tsx
+│   ├── notifications/
+│   │   └── alertNotifications.ts
 │   ├── screens/
 │   │   ├── AI.tsx
 │   │   ├── Alerts.tsx
-│   │   ├── Details.tsx
 │   │   ├── Diary/
 │   │   │   └── index.tsx
 │   │   ├── Login.tsx
@@ -208,20 +218,27 @@ PetCenter/
 │   │   ├── Register.tsx
 │   │   └── Welcome.tsx
 │   ├── store/
-│   │   ├── useAlerts.ts
+│   │   ├── useAssistant.ts
 │   │   ├── useAlertNotifications.ts
-│   │   └── useDiary.ts
+│   │   ├── useAlerts.ts
+│   │   ├── useDiary.ts
+│   │   ├── usePetCount.ts
+│   │   └── useRegistration.ts
 │   ├── styles/
 │   │   ├── global.ts
 │   │   └── theme.ts
-│   └── types/
-│       ├── api.ts
-│       ├── index.ts
-│       └── navigation.ts
+│   ├── types/
+│   │   ├── api.ts
+│   │   ├── index.ts
+│   │   └── navigation.ts
+│   └── utils/
+│       ├── date.ts
+│       └── validation.ts
 ├── App.tsx
 ├── app.json
 ├── index.ts
 ├── package.json
+├── package-lock.json
 └── tsconfig.json
 ```
 
@@ -240,7 +257,7 @@ O projeto separa as responsabilidades em camadas:
 * `styles/`: tema e estilos compartilhados;
 * `types/`: tipos de domínio e contratos da API.
 
-As telas não realizam chamadas HTTP diretamente. Elas utilizam hooks e componentes, enquanto a camada `api` concentra a comunicação com o backend.
+As telas delegam operações de rede e lógica reutilizável a hooks e serviços da camada `api`, que concentra a comunicação HTTP com os backends.
 
 ---
 
@@ -379,31 +396,6 @@ Depois, leia o QR Code com o Expo Go ou execute em um emulador.
 
 ---
 
-## 📚 Requisitos Acadêmicos Atendidos
-
-| Requisito | Status |
-| --- | --- |
-| React Native | Implementado |
-| Expo | Implementado |
-| TypeScript | Implementado |
-| Navegação por rotas | Implementado |
-| Mais de seis telas | Implementado |
-| Consumo de API REST | Implementado |
-| Autenticação real | API Java + JWT |
-| Proteção de telas | Implementado |
-| CRUD de pets | Implementado |
-| CRUD de entradas do diário | Implementado |
-| Registros de acompanhamento | Consulta, edição e exclusão implementadas na interface |
-| Assistente de IA | Chat integrado; processamento de perguntas IoT depende da API e da conexão com o ESP32 |
-| Notificações de alertas | Lembretes locais opcionais, sujeitos à permissão do dispositivo |
-| Estados de carregamento | Implementado |
-| Componentização | Implementado |
-| Atualização após mutações | Implementado |
-| Reativação de alertas | Pendente no backend |
-| Vídeo demonstrativo | Link publicado; confirmar que demonstra a versão final |
-
----
-
 ## 👥 Integrantes
 
 | Nome | GitHub | RM |
@@ -420,7 +412,7 @@ Depois, leia o QR Code com o Expo Go ou execute em um emulador.
 
 ### Repositório GitHub
 
-[Adicionar link do repositório oficial do GitHub Classroom](https://github.com/ArthurCPV/PetCenter)
+[Abrir o repositório do projeto no GitHub](https://github.com/ArthurCPV/PetCenter)
 
 ### Vídeo demonstrativo
 

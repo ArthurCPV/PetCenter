@@ -65,6 +65,7 @@ const Alerts = () => {
     setSelectedPetFilterId,
   ] = useState<string | undefined>();
   const [inactiveAlertsExpanded, setInactiveAlertsExpanded] = useState(true);
+  const [sendingNotificationId, setSendingNotificationId] = useState<string>();
 
   const isVeterinarian =
     user?.tipoUsuario ===
@@ -113,6 +114,7 @@ const Alerts = () => {
     isLoading: isLoadingNotifications,
     error: notificationError,
     enable: enableNotifications,
+    notifyNow,
   } = useAlertNotifications(isTutor ? user?.id : undefined, visibleAlerts);
 
   const filteredAlerts = useMemo(() => {
@@ -200,6 +202,23 @@ const Alerts = () => {
         ],
       );
     };
+
+  const handleNotifyNow = async (alert: Alerta): Promise<void> => {
+    setSendingNotificationId(String(alert.id));
+
+    try {
+      await notifyNow(alert);
+    } catch (error) {
+      Alert.alert(
+        "Notificação",
+        error instanceof Error
+          ? error.message
+          : "Não foi possível enviar a notificação.",
+      );
+    } finally {
+      setSendingNotificationId(undefined);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -506,6 +525,18 @@ const Alerts = () => {
               <OutlineButton
                 label="Desativar alerta"
                 onPress={() => handleToggleAlert(item)}
+                style={{ marginTop: 12 }}
+              />
+            ) : undefined}
+            {isTutor ? (
+              <OutlineButton
+                label={
+                  sendingNotificationId === String(item.id)
+                    ? "Enviando..."
+                    : "Notificar agora"
+                }
+                onPress={() => void handleNotifyNow(item)}
+                disabled={sendingNotificationId !== undefined}
                 style={{ marginTop: 12 }}
               />
             ) : undefined}

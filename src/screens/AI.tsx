@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -14,15 +14,8 @@ import {
   type ListRenderItem,
 } from "react-native";
 
-import { askAssistant } from "../api/assistant";
-import { ApiConnectionError, ApiHttpError } from "../api/api";
 import { colors, styles_th } from "../styles/theme";
-
-type ChatMessage = {
-  id: string;
-  role: "assistant" | "user";
-  text: string;
-};
+import { useAssistant, type ChatMessage } from "../store/useAssistant";
 
 const suggestedQuestions = [
   "Quantas vezes meu pet comeu hoje?",
@@ -138,90 +131,21 @@ const chatStyles = StyleSheet.create({
   },
 });
 
-const getRequestErrorMessage = (error: unknown): string => {
-  if (error instanceof ApiConnectionError) {
-    return "Não foi possível conectar ao assistente. Verifique sua conexão e tente novamente.";
-  }
-
-  if (error instanceof ApiHttpError) {
-    if (error.status === 400) {
-      return error.message;
-    }
-
-    if (error.status === 422) {
-      return "A API não aceitou a pergunta. Verifique o texto e tente novamente.";
-    }
-
-    if (error.status === 500) {
-      return "O servidor recebeu a pergunta, mas não conseguiu processá-la. A equipe precisa verificar a configuração do Gemini e o acesso aos dados do IoT.";
-    }
-
-    if (error.status === 502 || error.status === 503 || error.status === 504) {
-      return "O assistente está temporariamente indisponível. Tente novamente em alguns instantes.";
-    }
-
-    return `Não foi possível obter uma resposta do assistente (HTTP ${error.status}).`;
-  }
-
-  return error instanceof Error
-    ? error.message
-    : "Ocorreu um erro inesperado ao consultar o assistente.";
-};
-
 const AI = () => {
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      id: "welcome",
-      role: "assistant",
-      text: "Olá! Posso ajudar com os dados de alimentação e hidratação do monitor IoT.",
-    },
-  ]);
-  const [input, setInput] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [isSending, setIsSending] = useState(false);
+  const {
+    messages,
+    input,
+    setInput,
+    errorMessage,
+    isSending,
+    sendMessage,
+    clearError,
+  } = useAssistant();
   const listRef = useRef<FlatList<ChatMessage>>(null);
-  const nextMessageId = useRef(0);
 
   useEffect(() => {
     listRef.current?.scrollToEnd({ animated: true });
   }, [messages, isSending]);
-
-  const sendMessage = async (text = input): Promise<void> => {
-    const message = text.trim();
-
-    if (!message || isSending) {
-      return;
-    }
-
-    const userMessage: ChatMessage = {
-      id: `user-${nextMessageId.current++}`,
-      role: "user",
-      text: message,
-    };
-
-    setMessages((current) => [...current, userMessage]);
-    setInput("");
-    setErrorMessage("");
-    setIsSending(true);
-
-    try {
-      const response = await askAssistant(message);
-
-      setMessages((current) => [
-        ...current,
-        {
-          id: `assistant-${nextMessageId.current++}`,
-          role: "assistant",
-          text: response,
-        },
-      ]);
-    } catch (error) {
-      setInput(message);
-      setErrorMessage(getRequestErrorMessage(error));
-    } finally {
-      setIsSending(false);
-    }
-  };
 
   const renderMessage: ListRenderItem<ChatMessage> = ({ item }) => {
     const isUser = item.role === "user";
@@ -362,7 +286,7 @@ const AI = () => {
             onChangeText={(value) => {
               setInput(value);
               if (errorMessage) {
-                setErrorMessage("");
+                clearError();
               }
             }}
             onSubmitEditing={() => void sendMessage()}

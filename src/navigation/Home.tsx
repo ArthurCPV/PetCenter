@@ -110,7 +110,7 @@ const Tabs = () => {
 
                     tabBarIcon: () => (
                         <Image
-                            source={require("../../assets/icons/poketrainer.png")}
+                            source={require("../../assets/icons/Icon_perfil_png.png")}
                             style={{
                                 width: 40,
                                 height: 40,
