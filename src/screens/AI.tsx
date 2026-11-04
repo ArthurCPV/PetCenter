@@ -2,9 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   View,
@@ -26,6 +29,114 @@ const suggestedQuestions = [
   "Que horas ele bebeu água?",
   "Ele comeu mais ontem ou hoje?",
 ];
+
+const chatStyles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 12,
+  },
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  assistantIcon: {
+    width: 44,
+    height: 44,
+  },
+  title: {
+    color: colors.primary,
+    fontSize: 25,
+    fontWeight: "700",
+  },
+  subtitle: {
+    marginTop: 3,
+    color: "#777",
+    fontSize: 14,
+  },
+  scopeNotice: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 9,
+    marginTop: 14,
+    paddingHorizontal: 9,
+    paddingVertical: 7,
+    borderRadius: 10,
+    backgroundColor: "#FFF0F0",
+  },
+  scopeIcon: {
+    color: colors.primary,
+    fontSize: 15,
+    fontWeight: "700",
+  },
+  scopeText: {
+    flex: 1,
+    color: "#777",
+    fontSize: 11,
+    lineHeight: 15,
+  },
+  messageList: {
+    flexGrow: 1,
+    justifyContent: "flex-end",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  message: {
+    maxWidth: "88%",
+    marginBottom: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 16,
+  },
+  composer: {
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 10,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.border,
+    backgroundColor: colors.background,
+  },
+  questionChip: {
+    marginRight: 8,
+    marginBottom: 10,
+    paddingHorizontal: 11,
+    paddingVertical: 8,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: "#FFFFFF",
+  },
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: 8,
+  },
+  input: {
+    flex: 1,
+    minHeight: 46,
+    maxHeight: 112,
+    paddingVertical: 11,
+    backgroundColor: "#FFFFFF",
+  },
+  sendButton: {
+    width: 46,
+    height: 46,
+    padding: 0,
+    borderRadius: 23,
+  },
+  disclaimer: {
+    marginTop: 8,
+    color: "#888",
+    fontSize: 11,
+    lineHeight: 15,
+    textAlign: "center",
+  },
+});
 
 const getRequestErrorMessage = (error: unknown): string => {
   if (error instanceof ApiConnectionError) {
@@ -62,7 +173,7 @@ const AI = () => {
     {
       id: "welcome",
       role: "assistant",
-      text: "Olá! Sou o assistente CLYVO VET. Posso consultar os dados de alimentação e hidratação registrados pelo sistema IoT. O que você gostaria de saber?",
+      text: "Olá! Posso ajudar com os dados de alimentação e hidratação do monitor IoT.",
     },
   ]);
   const [input, setInput] = useState("");
@@ -117,17 +228,15 @@ const AI = () => {
 
     return (
       <View
-        style={{
-          alignSelf: isUser ? "flex-end" : "flex-start",
-          maxWidth: "88%",
-          marginBottom: 12,
-          paddingHorizontal: 15,
-          paddingVertical: 11,
-          borderRadius: 18,
-          backgroundColor: isUser ? colors.primary : colors.card,
-          borderWidth: isUser ? 0 : 1,
-          borderColor: colors.border,
-        }}
+        style={[
+          chatStyles.message,
+          {
+            alignSelf: isUser ? "flex-end" : "flex-start",
+            backgroundColor: isUser ? colors.primary : "#FFFFFF",
+            borderBottomRightRadius: isUser ? 5 : 16,
+            borderBottomLeftRadius: isUser ? 16 : 5,
+          },
+        ]}
       >
         <Text
           style={{
@@ -144,15 +253,33 @@ const AI = () => {
 
   return (
     <KeyboardAvoidingView
-      style={styles_th.container}
+      style={chatStyles.screen}
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={Platform.OS === "ios" ? 88 : 0}
     >
-      <View style={{ paddingHorizontal: 20, paddingTop: 24, paddingBottom: 12 }}>
-        <Text style={styles_th.title}>Assistente CLYVO VET</Text>
-        <Text style={styles_th.subtitle}>
-          Pergunte sobre os dados reais de alimentação e hidratação do IoT.
-        </Text>
+      <View style={chatStyles.header}>
+        <View style={chatStyles.headerRow}>
+          <Image
+            source={require("../../assets/icons/Icon_IA_petcenter.png")}
+            style={chatStyles.assistantIcon}
+            resizeMode="contain"
+            accessibilityLabel="Ícone do assistente"
+          />
+          <View style={{ flex: 1 }}>
+            <Text style={chatStyles.title}>Assistente CLYVO VET</Text>
+            <Text style={chatStyles.subtitle}>
+              Alimentação e hidratação do IoT
+            </Text>
+          </View>
+        </View>
+
+        <View style={chatStyles.scopeNotice}>
+          <Text style={chatStyles.scopeIcon}>i</Text>
+          <Text style={chatStyles.scopeText}>
+            Integração experimental de outra disciplina. Usa dados do IoT
+            compartilhado, sem identificar o perfil ou pet desta conta.
+          </Text>
+        </View>
       </View>
 
       <FlatList
@@ -160,12 +287,7 @@ const AI = () => {
         data={messages}
         keyExtractor={(item) => item.id}
         renderItem={renderMessage}
-        contentContainerStyle={{
-          flexGrow: 1,
-          justifyContent: "flex-end",
-          paddingHorizontal: 16,
-          paddingVertical: 12,
-        }}
+        contentContainerStyle={chatStyles.messageList}
         onContentSizeChange={() =>
           listRef.current?.scrollToEnd({ animated: true })
         }
@@ -173,16 +295,16 @@ const AI = () => {
         ListFooterComponent={
           isSending ? (
             <View
-              style={{
-                alignSelf: "flex-start",
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 8,
-                marginBottom: 12,
-                padding: 14,
-                borderRadius: 18,
-                backgroundColor: colors.card,
-              }}
+              style={[
+                chatStyles.message,
+                {
+                  alignSelf: "flex-start",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 8,
+                  backgroundColor: "#FFFFFF",
+                },
+              ]}
             >
               <ActivityIndicator size="small" color={colors.primary} />
               <Text style={{ color: "#666" }}>Consultando os dados...</Text>
@@ -191,16 +313,7 @@ const AI = () => {
         }
       />
 
-      <View
-        style={{
-          paddingHorizontal: 16,
-          paddingTop: 8,
-          paddingBottom: 12,
-          borderTopWidth: 1,
-          borderTopColor: colors.border,
-          backgroundColor: colors.background,
-        }}
-      >
+      <View style={chatStyles.composer}>
         {errorMessage ? (
           <Text
             accessibilityRole="alert"
@@ -215,13 +328,10 @@ const AI = () => {
         ) : null}
 
         {messages.length === 1 ? (
-          <View
-            style={{
-              flexDirection: "row",
-              flexWrap: "wrap",
-              gap: 8,
-              marginBottom: 10,
-            }}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
           >
             {suggestedQuestions.map((question) => (
               <Pressable
@@ -229,25 +339,20 @@ const AI = () => {
                 accessibilityRole="button"
                 disabled={isSending}
                 onPress={() => void sendMessage(question)}
-                style={{
-                  paddingHorizontal: 11,
-                  paddingVertical: 8,
-                  borderRadius: 16,
-                  borderWidth: 1,
-                  borderColor: colors.border,
-                  backgroundColor: colors.card,
-                  opacity: isSending ? 0.6 : 1,
-                }}
+                style={[
+                  chatStyles.questionChip,
+                  { opacity: isSending ? 0.6 : 1 },
+                ]}
               >
                 <Text style={{ color: colors.text, fontSize: 13 }}>
                   {question}
                 </Text>
               </Pressable>
             ))}
-          </View>
+          </ScrollView>
         ) : null}
 
-        <View style={{ flexDirection: "row", alignItems: "flex-end", gap: 8 }}>
+        <View style={chatStyles.inputRow}>
           <TextInput
             accessibilityLabel="Pergunta para o assistente"
             multiline
@@ -264,16 +369,7 @@ const AI = () => {
             placeholder="Digite sua pergunta..."
             placeholderTextColor="#888"
             returnKeyType="send"
-            style={[
-              styles_th.input,
-              {
-                minHeight: 48,
-                maxHeight: 120,
-                flex: 1,
-                paddingVertical: 12,
-                backgroundColor: colors.card,
-              },
-            ]}
+            style={[styles_th.input, chatStyles.input]}
           />
 
           <Pressable
@@ -283,31 +379,22 @@ const AI = () => {
             onPress={() => void sendMessage()}
             style={[
               styles_th.button,
-              {
-                minWidth: 54,
-                height: 48,
-                padding: 12,
-                opacity: !input.trim() || isSending ? 0.5 : 1,
-              },
+              chatStyles.sendButton,
+              { opacity: !input.trim() || isSending ? 0.5 : 1 },
             ]}
           >
             {isSending ? (
               <ActivityIndicator size="small" color="#FFFFFF" />
             ) : (
-              <Text style={styles_th.buttonText}>Enviar</Text>
+              <Text style={styles_th.buttonText}>↑</Text>
             )}
           </Pressable>
         </View>
 
         <Text
-          style={{
-            marginTop: 8,
-            color: "#777",
-            fontSize: 12,
-            textAlign: "center",
-          }}
+          style={chatStyles.disclaimer}
         >
-          Os sensores registram interações com os recipientes; não substituem avaliação veterinária.
+          Os sensores registram interações com recipientes e não substituem avaliação veterinária.
         </Text>
       </View>
     </KeyboardAvoidingView>

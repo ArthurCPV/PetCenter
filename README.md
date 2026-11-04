@@ -35,7 +35,8 @@ O objetivo é facilitar o acompanhamento diário do animal e oferecer ao veterin
 | ✅ Gestão de pets | Cadastro, consulta, edição e exclusão |
 | ✅ Diário do pet | Criação, consulta, edição e exclusão de entradas |
 | ✅ Registros de acompanhamento | Consulta, edição e exclusão de registros |
-| ✅ Alertas | Consulta, criação e desativação de alertas |
+| ✅ Alertas | Consulta, criação e desativação restrita à interface veterinária |
+| ✅ Notificações locais | Lembretes opcionais no aparelho do tutor, seguindo a frequência do alerta |
 | ✅ Visão do veterinário | Consulta de pets e diários autorizados |
 | ✅ Estados de carregamento | Indicadores durante carregamento e atualização |
 | ✅ Atualização da interface | Dados atualizados após operações bem-sucedidas |
@@ -126,23 +127,24 @@ Os alertas são associados a pets e possuem informações como:
 
 * Listar alertas
 * Filtrar alertas dos pets do tutor
-* Criar alertas como veterinário
-* Desativar alertas
+* Buscar e filtrar pets por nome ou ID
+* Criar e desativar alertas pela interface veterinária
 * Exibir alertas desativados em estado visual cinza com a mensagem `Desativado`
 
 A reativação depende de um endpoint que não está disponível no Swagger atual do backend.
+O app oculta as ações de gerenciamento para tutores e também as bloqueia na camada de estado. A API Java deve aplicar a mesma autorização no servidor; uma regra somente no aplicativo não protege chamadas diretas ao endpoint.
+
+### Notificações locais
+
+Quando a permissão do sistema ainda não foi concedida, a tela de Alertas oferece a opção de ativá-la. Com a permissão concedida, essa opção desaparece e o app agenda notificações locais neste aparelho: alertas com frequência se repetem no intervalo definido pelo veterinário; sem frequência, geram um lembrete único. A permissão é mantida pelo Android ou iOS e pode ser revogada nas configurações do dispositivo; ao voltar ao app, o estado é verificado novamente. Desativar um alerta pelo veterinário cancela os lembretes locais correspondentes na próxima sincronização da tela. As notificações não são push.
 
 ---
 
 ## 🤖 Assistente de IA
 
-A tela de IA oferece um chat com a API CLYVO VET. As perguntas são enviadas para `POST /chat` como `{ "message": "..." }`, e a interface exibe o campo `response` retornado pelo backend. Exemplos incluem perguntas sobre visitas aos recipientes de comida e água e comparações disponíveis no histórico IoT.
+A tela oferece um chat com a API CLYVO VET. As perguntas são enviadas para `POST /chat` como `{ "message": "..." }`, e a interface exibe o campo `response` retornado pelo backend. O assistente responde sobre alimentação e hidratação com base nos dados disponíveis pelo monitor IoT.
 
-O assistente depende da API CLYVO VET e da conexão dessa API aos dados do ESP32/Wokwi. Se o serviço não conseguir processar uma pergunta, o app apresenta uma mensagem de erro e não inventa uma resposta.
-
-O contrato publicado confirma `POST /chat`; a raiz da API pode responder `Not Found` por não possuir uma rota `/`. Na validação atual, a API respondeu a uma saudação, mas falhou ao processar uma pergunta que exige dados IoT. A integração ponta a ponta desses dados ainda precisa ser validada.
-
-Os sensores registram interações com recipientes; as respostas não são diagnóstico veterinário e não substituem a avaliação de um profissional.
+Esta integração foi desenvolvida originalmente para outra disciplina e ainda não distingue contas ou pets do PetCenter. As respostas consultam o monitor IoT compartilhado, não o perfil, os pets ou o diário do usuário autenticado. Os sensores registram interações com recipientes; o assistente não realiza diagnóstico veterinário nem substitui a avaliação de um profissional.
 
 ---
 
@@ -159,7 +161,7 @@ A sessão e os dados básicos do usuário são armazenados usando AsyncStorage. 
 | Perfil | Permissões principais |
 | --- | --- |
 | Tutor | Gerencia seus pets, diários e registros |
-| Veterinário | Consulta pets e diários e cria alertas |
+| Veterinário | Consulta pets e diários e gerencia alertas |
 
 ---
 
@@ -188,7 +190,11 @@ PetCenter/
 │   │   ├── Form.tsx
 │   │   ├── Item.tsx
 │   │   ├── PetCard.tsx
-│   │   └── RecordFormModal.tsx
+│   │   ├── PetFilter.tsx
+│   │   ├── RecordFormModal.tsx
+│   │   └── SelectDropdown.tsx
+│   ├── notifications/
+│   │   └── alertNotifications.ts
 │   ├── navigation/
 │   │   └── Home.tsx
 │   ├── screens/
@@ -203,6 +209,7 @@ PetCenter/
 │   │   └── Welcome.tsx
 │   ├── store/
 │   │   ├── useAlerts.ts
+│   │   ├── useAlertNotifications.ts
 │   │   └── useDiary.ts
 │   ├── styles/
 │   │   ├── global.ts
@@ -388,11 +395,12 @@ Depois, leia o QR Code com o Expo Go ou execute em um emulador.
 | CRUD de entradas do diário | Implementado |
 | Registros de acompanhamento | Consulta, edição e exclusão implementadas na interface |
 | Assistente de IA | Chat integrado; processamento de perguntas IoT depende da API e da conexão com o ESP32 |
+| Notificações de alertas | Lembretes locais opcionais, sujeitos à permissão do dispositivo |
 | Estados de carregamento | Implementado |
 | Componentização | Implementado |
 | Atualização após mutações | Implementado |
 | Reativação de alertas | Pendente no backend |
-| Vídeo demonstrativo | Adicionar link antes da entrega |
+| Vídeo demonstrativo | Link publicado; confirmar que demonstra a versão final |
 
 ---
 
@@ -416,7 +424,7 @@ Depois, leia o QR Code com o Expo Go ou execute em um emulador.
 
 ### Vídeo demonstrativo
 
-[Adicionar link do vídeo publicado no YouTube](https://youtu.be/-1Dy5-Xt1R8)
+[Assistir à demonstração no YouTube](https://youtu.be/-1Dy5-Xt1R8)
 
 ---
 

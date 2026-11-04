@@ -25,6 +25,8 @@ import {
 } from "../store/useAlerts";
 
 import AlertFormModal from "../components/AlertFormModal";
+import PetFilter from "../components/PetFilter";
+import { useAlertNotifications } from "../store/useAlertNotifications";
 
 import type {
   Alerta,
@@ -75,6 +77,7 @@ const Alerts = () => {
     pets,
     isLoading,
     isRefreshing,
+    loadError,
     addAlert,
     activateAlert,
     deactivateAlert,
@@ -85,10 +88,19 @@ const Alerts = () => {
     modalVisible,
     setModalVisible,
   ] = useState(false);
+  const [
+    petSearch,
+    setPetSearch,
+  ] = useState("");
+  const [
+    selectedPetFilterId,
+    setSelectedPetFilterId,
+  ] = useState<string | undefined>();
 
   const isVeterinarian =
     user?.tipoUsuario ===
     "VETERINARIO";
+  const isTutor = user?.tipoUsuario === "TUTOR";
 
   const visibleAlerts =
     useMemo<
@@ -127,19 +139,42 @@ const Alerts = () => {
       ],
     );
 
+  const {
+    hasPermission: hasNotificationPermission,
+    isLoading: isLoadingNotifications,
+    error: notificationError,
+    enable: enableNotifications,
+  } = useAlertNotifications(isTutor ? user?.id : undefined, visibleAlerts);
+
+  const filteredAlerts = useMemo(() => {
+    const query = petSearch.trim().toLocaleLowerCase();
+
+    return visibleAlerts.filter((alert) => {
+      const matchesPet =
+        selectedPetFilterId === undefined ||
+        alert.petId === Number(selectedPetFilterId);
+      const matchesSearch =
+        !query ||
+        alert.petNome.toLocaleLowerCase().includes(query) ||
+        String(alert.petId).includes(query);
+
+      return matchesPet && matchesSearch;
+    });
+  }, [petSearch, selectedPetFilterId, visibleAlerts]);
+
   const activeAlerts =
     useMemo<
       Alerta[]
     >(
       () =>
-        visibleAlerts.filter(
+        filteredAlerts.filter(
           (
             alert: Alerta,
           ) =>
             alert.ativo,
         ),
       [
-        visibleAlerts,
+        filteredAlerts,
       ],
     );
 
@@ -148,14 +183,14 @@ const Alerts = () => {
       Alerta[]
     >(
       () =>
-        visibleAlerts.filter(
+        filteredAlerts.filter(
           (
             alert: Alerta,
           ) =>
             !alert.ativo,
         ),
       [
-        visibleAlerts,
+        filteredAlerts,
       ],
     );
 
@@ -163,6 +198,10 @@ const Alerts = () => {
     (
       alert: Alerta,
     ): void => {
+      if (!isVeterinarian) {
+        return;
+      }
+
       const actionLabel = alert.ativo ? "Desativar" : "Ativar";
       const confirmMessage = alert.ativo
         ? "Tem certeza que deseja desativar este alerta?"
@@ -261,6 +300,93 @@ const Alerts = () => {
         </Text>
       </View>
 
+      {loadError ? (
+        <Text
+          accessibilityRole="alert"
+          style={{
+            marginHorizontal: 20,
+            marginBottom: 14,
+            color: "#B71C1C",
+            fontSize: 13,
+            textAlign: "center",
+          }}
+        >
+          Não foi possível atualizar os alertas: {loadError}
+        </Text>
+      ) : undefined}
+
+      {isTutor && !isLoadingNotifications && !hasNotificationPermission ? (
+        <View
+          style={{
+            marginHorizontal: 20,
+            marginBottom: 14,
+            padding: 14,
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: "#F0DADA",
+            backgroundColor: "#fff",
+          }}
+        >
+          <Text
+            style={{
+              color: "#2D2D2D",
+              fontSize: 14,
+              lineHeight: 20,
+            }}
+          >
+            Receba lembretes neste aparelho conforme a frequência definida pelo veterinário.
+          </Text>
+          <TouchableOpacity
+            onPress={() => {
+              void (async () => {
+                try {
+                  await enableNotifications();
+                } catch (error) {
+                  Alert.alert(
+                    "Notificações",
+                    error instanceof Error
+                      ? error.message
+                      : "Não foi possível atualizar as notificações.",
+                  );
+                }
+              })();
+            }}
+            style={{
+              minHeight: 44,
+              marginTop: 10,
+              borderRadius: 13,
+              borderWidth: 1,
+              borderColor: "#E53935",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text
+              style={{
+                color: "#E53935",
+                fontWeight: "700",
+              }}
+            >
+              Ativar notificações
+            </Text>
+          </TouchableOpacity>
+        </View>
+      ) : undefined}
+
+      {isTutor && notificationError ? (
+        <Text
+          accessibilityRole="alert"
+          style={{
+            marginHorizontal: 20,
+            marginBottom: 14,
+            color: "#B71C1C",
+            fontSize: 12,
+          }}
+        >
+          {notificationError}
+        </Text>
+      ) : undefined}
+
       {isVeterinarian ? (
         <TouchableOpacity
           onPress={() =>
@@ -294,6 +420,16 @@ const Alerts = () => {
             + Criar alerta
           </Text>
         </TouchableOpacity>
+      ) : undefined}
+
+      {pets.length > 0 ? (
+        <PetFilter
+          pets={pets}
+          search={petSearch}
+          selectedPetId={selectedPetFilterId}
+          onSearchChange={setPetSearch}
+          onPetChange={setSelectedPetFilterId}
+        />
       ) : undefined}
 
       <FlatList<Alerta>
@@ -382,32 +518,50 @@ const Alerts = () => {
               )}
             </Text>
 
-            <TouchableOpacity
-              onPress={() =>
-                handleToggleAlert(item)
-              }
-              style={{
-                marginTop: 12,
-                padding: 10,
-                borderRadius: 12,
-                borderWidth: 1,
-                borderColor:
-                  "#E53935",
-                alignItems:
-                  "center",
-              }}
-            >
+            {item.frequenciaHoras ? (
               <Text
                 style={{
-                  color:
-                    "#E53935",
-                  fontWeight:
-                    "bold",
+                  marginTop: 8,
+                  color: "#777",
+                  fontSize: 12,
                 }}
               >
-                Desativar alerta
+                Frequência: a cada {item.frequenciaHoras} hora(s)
               </Text>
-            </TouchableOpacity>
+            ) : (
+              <Text
+                style={{
+                  marginTop: 8,
+                  color: "#777",
+                  fontSize: 12,
+                }}
+              >
+                Lembrete único
+              </Text>
+            )}
+
+            {isVeterinarian ? (
+              <TouchableOpacity
+                onPress={() => handleToggleAlert(item)}
+                style={{
+                  marginTop: 12,
+                  padding: 10,
+                  borderRadius: 12,
+                  borderWidth: 1,
+                  borderColor: "#E53935",
+                  alignItems: "center",
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#E53935",
+                    fontWeight: "bold",
+                  }}
+                >
+                  Desativar alerta
+                </Text>
+              </TouchableOpacity>
+            ) : undefined}
           </View>
         )}
         ListHeaderComponent={
@@ -428,7 +582,9 @@ const Alerts = () => {
               styles_th.emptyText
             }
           >
-            Nenhum alerta ativo.
+            {petSearch || selectedPetFilterId
+              ? "Nenhum alerta corresponde ao filtro."
+              : "Nenhum alerta ativo."}
           </Text>
         }
         ListFooterComponent={

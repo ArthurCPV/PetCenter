@@ -75,8 +75,8 @@ const Tabs = () => {
                         <Image
                             source={require("../../assets/icons/Notificacao_petcenter_.png")}
                             style={{
-                                width: 32,
-                                height: 38,
+                                width: 50,
+                                height: 50,
                             }}
                             resizeMode="contain"
                         />
@@ -94,8 +94,8 @@ const Tabs = () => {
                         <Image
                             source={require("../../assets/icons/Icon_IA_petcenter.png")}
                             style={{
-                                width: 55,
-                                height: 36,
+                                width: 50,
+                                height: 50,
                             }}
                             resizeMode="contain"
                         />

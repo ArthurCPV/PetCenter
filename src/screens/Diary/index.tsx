@@ -44,6 +44,7 @@ import type {
 
 import CreatePetModal from "../../components/CreatePetModal";
 import PetCard from "../../components/PetCard";
+import PetFilter from "../../components/PetFilter";
 import Form from "../../components/Form";
 import EntryCard from "../../components/EntryCard";
 import RecordFormModal from "../../components/RecordFormModal";
@@ -132,6 +133,16 @@ const Diary = () => {
   >(undefined);
 
   const [
+    petSearch,
+    setPetSearch,
+  ] = useState("");
+
+  const [
+    selectedPetFilterId,
+    setSelectedPetFilterId,
+  ] = useState<string | undefined>();
+
+  const [
     selectedEntryId,
     setSelectedEntryId,
   ] = useState<
@@ -210,6 +221,22 @@ const Diary = () => {
           new Date(),
         ),
     );
+
+  const filteredPets = useMemo(() => {
+    const query = petSearch.trim().toLocaleLowerCase();
+
+    return pets.filter((pet) => {
+      const matchesPet =
+        selectedPetFilterId === undefined ||
+        pet.id === selectedPetFilterId;
+      const matchesSearch =
+        !query ||
+        pet.name.toLocaleLowerCase().includes(query) ||
+        pet.id.toLocaleLowerCase().includes(query);
+
+      return matchesPet && matchesSearch;
+    });
+  }, [pets, petSearch, selectedPetFilterId]);
 
   useFocusEffect(
     useCallback(() => {
@@ -698,8 +725,18 @@ const Diary = () => {
             </View>
           )}
 
+          {!isTutor && pets.length > 0 ? (
+            <PetFilter
+              pets={pets}
+              search={petSearch}
+              selectedPetId={selectedPetFilterId}
+              onSearchChange={setPetSearch}
+              onPetChange={setSelectedPetFilterId}
+            />
+          ) : undefined}
+
           <FlatList
-            data={pets}
+            data={isTutor ? pets : filteredPets}
             keyExtractor={(
               item,
             ) =>
@@ -728,7 +765,9 @@ const Diary = () => {
               >
                 {isTutor
                   ? "Nenhum diário criado ainda ✨"
-                  : "Nenhum pet disponível para visualização."}
+                  : petSearch || selectedPetFilterId
+                    ? "Nenhum pet corresponde à busca."
+                    : "Nenhum pet disponível para visualização."}
               </Text>
             }
           />

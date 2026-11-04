@@ -24,6 +24,8 @@ const useAlerts = () => {
 
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  const [loadError, setLoadError] = useState<string | undefined>();
+
   const loadAlerts = useCallback(
     async (showLoading = false): Promise<void> => {
       if (!user) {
@@ -48,6 +50,14 @@ const useAlerts = () => {
         setAlerts(apiAlerts);
 
         setPets(apiPets);
+        setLoadError(undefined);
+      } catch (error) {
+        console.error("Não foi possível carregar os alertas:", error);
+        setLoadError(
+          error instanceof Error
+            ? error.message
+            : "Não foi possível carregar os alertas.",
+        );
       } finally {
         setIsLoading(false);
 
@@ -63,29 +73,41 @@ const useAlerts = () => {
 
   const addAlert = useCallback(
     async (data: CreateAlertData): Promise<void> => {
+      if (user?.tipoUsuario !== "VETERINARIO") {
+        throw new Error("Somente veterinários podem criar alertas.");
+      }
+
       await createAlert(data);
 
       await loadAlerts();
     },
-    [loadAlerts],
+    [loadAlerts, user],
   );
 
   const activateAlert = useCallback(
     async (id: string): Promise<void> => {
+      if (user?.tipoUsuario !== "VETERINARIO") {
+        throw new Error("Somente veterinários podem ativar alertas.");
+      }
+
       await activateAlertApi(id);
 
       await loadAlerts();
     },
-    [loadAlerts],
+    [loadAlerts, user],
   );
 
   const deactivateAlert = useCallback(
     async (id: string): Promise<void> => {
+      if (user?.tipoUsuario !== "VETERINARIO") {
+        throw new Error("Somente veterinários podem desativar alertas.");
+      }
+
       await deactivateAlertApi(id);
 
       await loadAlerts();
     },
-    [loadAlerts],
+    [loadAlerts, user],
   );
 
   const refresh = useCallback(async (): Promise<void> => {
@@ -99,6 +121,7 @@ const useAlerts = () => {
     pets,
     isLoading,
     isRefreshing,
+    loadError,
     addAlert,
     activateAlert,
     deactivateAlert,

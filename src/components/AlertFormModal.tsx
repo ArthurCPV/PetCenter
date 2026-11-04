@@ -25,6 +25,7 @@ import type {
     CreateAlertData,
     PetDiary,
 } from "../types";
+import SelectDropdown from "./SelectDropdown";
 
 type Props = {
     visible: boolean;
@@ -129,6 +130,16 @@ const AlertFormModal = ({
         isSubmitting,
         setIsSubmitting,
     ] = useState(false);
+
+    const petOptions = pets.map((pet) => ({
+        value: pet.id,
+        label: `${pet.name} · ID ${pet.id}`,
+    }));
+
+    const typeOptions = alertTypes.map((alertType) => ({
+        value: alertType.value,
+        label: alertType.label,
+    }));
 
     useEffect(() => {
         if (
@@ -349,37 +360,12 @@ const AlertFormModal = ({
                             Pet
                         </Text>
 
-                        {pets.map(
-                            (pet) => (
-                                <TouchableOpacity
-                                    key={
-                                        pet.id
-                                    }
-                                    onPress={() =>
-                                        setSelectedPetId(
-                                            pet.id,
-                                        )
-                                    }
-                                    style={{
-                                        marginTop: 8,
-                                        padding: 12,
-                                        borderRadius: 12,
-                                        borderWidth: 1,
-                                        borderColor:
-                                            selectedPetId ===
-                                                pet.id
-                                                ? "#E53935"
-                                                : "#ccc",
-                                    }}
-                                >
-                                    <Text>
-                                        {
-                                            pet.name
-                                        }
-                                    </Text>
-                                </TouchableOpacity>
-                            ),
-                        )}
+                        <SelectDropdown
+                            value={selectedPetId}
+                            options={petOptions}
+                            onChange={setSelectedPetId}
+                            placeholder="Selecionar pet"
+                        />
 
                         <Text
                             style={{
@@ -391,39 +377,21 @@ const AlertFormModal = ({
                             Tipo
                         </Text>
 
-                        {alertTypes.map(
-                            (
-                                alertType,
-                            ) => (
-                                <TouchableOpacity
-                                    key={
-                                        alertType.value
-                                    }
-                                    onPress={() =>
-                                        setType(
-                                            alertType.value,
-                                        )
-                                    }
-                                    style={{
-                                        marginTop: 8,
-                                        padding: 12,
-                                        borderRadius: 12,
-                                        borderWidth: 1,
-                                        borderColor:
-                                            type ===
-                                                alertType.value
-                                                ? "#E53935"
-                                                : "#ccc",
-                                    }}
-                                >
-                                    <Text>
-                                        {
-                                            alertType.label
-                                        }
-                                    </Text>
-                                </TouchableOpacity>
-                            ),
-                        )}
+                        <SelectDropdown
+                            value={type}
+                            options={typeOptions}
+                            onChange={(selectedValue) => {
+                                const selectedType = alertTypes.find(
+                                    (alertType) =>
+                                        alertType.value === selectedValue,
+                                );
+
+                                if (selectedType) {
+                                    setType(selectedType.value);
+                                }
+                            }}
+                            placeholder="Selecionar tipo"
+                        />
 
                         <TextInput
                             placeholder="Título *"
@@ -495,7 +463,9 @@ const AlertFormModal = ({
                                 fontSize: 13,
                             }}
                         >
-                            O alerta será iniciado imediatamente.
+                            {frequency.trim()
+                                ? `O lembrete se repetirá a cada ${frequency} hora(s).`
+                                : "Sem frequência, o lembrete será enviado uma única vez."}
                         </Text>
                     </ScrollView>
 
