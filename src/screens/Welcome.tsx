@@ -35,7 +35,7 @@ const Welcome = () => {
       ]}
     >
       <Image
-        source={require("../../assets/icons/pokecenter-4.png")}
+        source={require("../../assets/icons/Icon_petcenter.png")}
         style={{
           width: 120,
           height: 120,

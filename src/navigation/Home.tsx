@@ -54,7 +54,7 @@ const Tabs = () => {
 
                     tabBarIcon: () => (
                         <Image
-                            source={require("../../assets/icons/pokecenter-3.png")}
+                            source={require("../../assets/icons/Icon_diario_petcenter.png")}
                             style={{
                                 width: 50,
                                 height: 50,
@@ -73,7 +73,7 @@ const Tabs = () => {
 
                     tabBarIcon: () => (
                         <Image
-                            source={require("../../assets/icons/pokealert-1.png")}
+                            source={require("../../assets/icons/Notificacao_petcenter_.png")}
                             style={{
                                 width: 32,
                                 height: 38,
@@ -92,7 +92,7 @@ const Tabs = () => {
 
                     tabBarIcon: () => (
                         <Image
-                            source={require("../../assets/icons/rotondex-1.png")}
+                            source={require("../../assets/icons/Icon_IA_petcenter.png")}
                             style={{
                                 width: 55,
                                 height: 36,
