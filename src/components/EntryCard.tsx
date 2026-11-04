@@ -9,84 +9,22 @@ import {
 import { styles_th } from "../styles/theme";
 
 import type { DiaryEntry } from "../types";
+import { getEntryTitle } from "../utils/date";
+import OutlineButton from "./OutlineButton";
 
 type Props = {
   entry: DiaryEntry;
   isTutor: boolean;
+  isEditable: boolean;
   onPress: () => void;
   onEdit: () => void;
   onDelete: () => void;
 };
 
-const isSameDay = (
-  firstDate: Date,
-  secondDate: Date,
-): boolean => {
-  return (
-    firstDate.getFullYear() ===
-    secondDate.getFullYear() &&
-    firstDate.getMonth() ===
-    secondDate.getMonth() &&
-    firstDate.getDate() ===
-    secondDate.getDate()
-  );
-};
-
-const getEntryTitle = (
-  entryDate: Date,
-): string => {
-  const today =
-    new Date();
-
-  if (
-    isSameDay(
-      entryDate,
-      today,
-    )
-  ) {
-    return "Registro de hoje";
-  }
-
-  const yesterday =
-    new Date(today);
-
-  yesterday.setDate(
-    today.getDate() - 1,
-  );
-
-  if (
-    isSameDay(
-      entryDate,
-      yesterday,
-    )
-  ) {
-    return "Registro de ontem";
-  }
-
-  const dayBeforeYesterday =
-    new Date(today);
-
-  dayBeforeYesterday.setDate(
-    today.getDate() - 2,
-  );
-
-  if (
-    isSameDay(
-      entryDate,
-      dayBeforeYesterday,
-    )
-  ) {
-    return "Registro de anteontem";
-  }
-
-  return `Registro de ${entryDate.toLocaleDateString(
-    "pt-BR",
-  )}`;
-};
-
 const EntryCard = ({
   entry,
   isTutor,
+  isEditable,
   onPress,
   onEdit,
   onDelete,
@@ -146,7 +84,7 @@ const EntryCard = ({
         </Text>
       </TouchableOpacity>
 
-      {isTutor ? (
+      {isTutor && isEditable ? (
         <View
           style={{
             flexDirection:
@@ -155,56 +93,25 @@ const EntryCard = ({
             marginTop: 12,
           }}
         >
-          <TouchableOpacity
+          <OutlineButton
+            label="✎ Editar Registro"
             onPress={onEdit}
-            style={{
-              flex: 1,
-              padding: 10,
-              borderRadius: 12,
-              borderWidth: 1,
-              borderColor:
-                "#E53935",
-              alignItems:
-                "center",
-            }}
-          >
-            <Text
-              style={{
-                color:
-                  "#E53935",
-                fontWeight:
-                  "bold",
-              }}
-            >
-              ✎ Editar Registro
-            </Text>
-          </TouchableOpacity>
+            style={{ flex: 1 }}
+          />
 
-          <TouchableOpacity
+          <OutlineButton
+            label="🗑 Excluir Registro"
             onPress={onDelete}
-            style={{
-              flex: 1,
-              padding: 10,
-              borderRadius: 12,
-              borderWidth: 1,
-              borderColor:
-                "#B71C1C",
-              alignItems:
-                "center",
-            }}
-          >
-            <Text
-              style={{
-                color:
-                  "#B71C1C",
-                fontWeight:
-                  "bold",
-              }}
-            >
-              🗑 Excluir Registro
-            </Text>
-          </TouchableOpacity>
+            color="#B71C1C"
+            style={{ flex: 1 }}
+          />
         </View>
+      ) : undefined}
+
+      {isTutor && !isEditable ? (
+        <Text style={{ marginTop: 10, color: "#999", fontSize: 12 }}>
+          Diário encerrado. Alterações não são permitidas após a meia-noite.
+        </Text>
       ) : undefined}
     </View>
   );

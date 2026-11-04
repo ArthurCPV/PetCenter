@@ -4,12 +4,9 @@ import {
 } from "react";
 
 import {
-    Modal,
-    View,
     Text,
     TextInput,
     TouchableOpacity,
-    Pressable,
     ScrollView,
 } from "react-native";
 
@@ -25,7 +22,9 @@ import type {
     CreateAlertData,
     PetDiary,
 } from "../types";
+import { ALERT_TYPES } from "../constants/alerts";
 import SelectDropdown from "./SelectDropdown";
+import ModalShell from "./ModalShell";
 
 type Props = {
     visible: boolean;
@@ -35,32 +34,6 @@ type Props = {
         data: CreateAlertData,
     ) => Promise<void>;
 };
-
-const alertTypes: Array<{
-    value: ApiAlertType;
-    label: string;
-}> = [
-        {
-            value: "CONSULTA",
-            label: "Consulta",
-        },
-        {
-            value: "REMEDIO",
-            label: "Remédio",
-        },
-        {
-            value: "ALIMENTACAO",
-            label: "Alimentação",
-        },
-        {
-            value: "EXERCICIO",
-            label: "Exercício",
-        },
-        {
-            value: "OUTROS",
-            label: "Outros",
-        },
-    ];
 
 const toLocalDateTime =
     (
@@ -136,7 +109,7 @@ const AlertFormModal = ({
         label: `${pet.name} · ID ${pet.id}`,
     }));
 
-    const typeOptions = alertTypes.map((alertType) => ({
+    const typeOptions = ALERT_TYPES.map((alertType) => ({
         value: alertType.value,
         label: alertType.label,
     }));
@@ -248,108 +221,20 @@ const AlertFormModal = ({
         };
 
     return (
-        <Modal
+        <ModalShell
             visible={visible}
-            transparent
-            animationType="fade"
-            onRequestClose={() => {
-                if (!isSubmitting) {
-                    onClose();
-                }
-            }}
+            title="Novo alerta"
+            onClose={onClose}
+            isSubmitting={isSubmitting}
         >
-            <View
-                style={{
-                    flex: 1,
-                    backgroundColor:
-                        "rgba(0,0,0,0.4)",
-                    justifyContent:
-                        "center",
-                    padding: 20,
-                }}
-            >
-                <Pressable
-                    style={{
-                        position:
-                            "absolute",
-                        top: 0,
-                        right: 0,
-                        bottom: 0,
-                        left: 0,
-                    }}
-                    onPress={() => {
-                        if (!isSubmitting) {
-                            onClose();
-                        }
-                    }}
-                />
-
-                <View
-                    style={{
-                        backgroundColor:
-                            "#fff",
-                        borderRadius: 20,
-                        padding: 20,
-                        maxHeight:
-                            "90%",
-                    }}
-                >
                     <ScrollView
+                        style={{ flexShrink: 1 }}
                         keyboardShouldPersistTaps="handled"
                         showsVerticalScrollIndicator
                         contentContainerStyle={{
                             paddingBottom: 5,
                         }}
                     >
-                        <View
-                            style={{
-                                flexDirection:
-                                    "row",
-                                alignItems:
-                                    "center",
-                                justifyContent:
-                                    "space-between",
-                            }}
-                        >
-                            <Text
-                                style={
-                                    styles_th.title
-                                }
-                            >
-                                Novo alerta
-                            </Text>
-
-                            <TouchableOpacity
-                                onPress={() => {
-                                    if (
-                                        !isSubmitting
-                                    ) {
-                                        onClose();
-                                    }
-                                }}
-                                style={{
-                                    width: 40,
-                                    height: 40,
-                                    alignItems:
-                                        "center",
-                                    justifyContent:
-                                        "center",
-                                }}
-                            >
-                                <Text
-                                    style={{
-                                        fontSize: 26,
-                                        color:
-                                            "#666",
-                                        fontWeight:
-                                            "bold",
-                                    }}
-                                >
-                                    ×
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-
                         <Text
                             style={{
                                 marginTop: 20,
@@ -381,7 +266,7 @@ const AlertFormModal = ({
                             value={type}
                             options={typeOptions}
                             onChange={(selectedValue) => {
-                                const selectedType = alertTypes.find(
+                                const selectedType = ALERT_TYPES.find(
                                     (alertType) =>
                                         alertType.value === selectedValue,
                                 );
@@ -417,7 +302,7 @@ const AlertFormModal = ({
                         />
 
                         <TextInput
-                            placeholder="Descrição"
+                            placeholder="Descrição (opcional)"
                             value={
                                 description
                             }
@@ -438,7 +323,7 @@ const AlertFormModal = ({
                         />
 
                         <TextInput
-                            placeholder="Frequência em horas (opcional)"
+                            placeholder="Frequência em horas (número inteiro, opcional)"
                             value={
                                 frequency
                             }
@@ -465,7 +350,7 @@ const AlertFormModal = ({
                         >
                             {frequency.trim()
                                 ? `O lembrete se repetirá a cada ${frequency} hora(s).`
-                                : "Sem frequência, o lembrete será enviado uma única vez."}
+                                : "Informe um número inteiro maior que zero. Sem frequência, o lembrete será enviado uma única vez."}
                         </Text>
                     </ScrollView>
 
@@ -519,9 +404,7 @@ const AlertFormModal = ({
                                 : "Criar alerta"}
                         </Text>
                     </TouchableOpacity>
-                </View>
-            </View>
-        </Modal>
+        </ModalShell>
     );
 };
 

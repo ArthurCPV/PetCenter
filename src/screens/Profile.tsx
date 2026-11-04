@@ -1,6 +1,5 @@
 import {
   useCallback,
-  useEffect,
   useState,
 } from "react";
 import {
@@ -9,14 +8,12 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import {
-  useFocusEffect,
-  useNavigation,
-} from "@react-navigation/native";
+import { useFocusEffect } from "@react-navigation/native";
 
 import { useAuth } from "../auth/AuthContext";
 import { listPetsByUser } from "../api/pets";
 import { styles_gb } from "../styles/global";
+import InfoCard from "../components/InfoCard";
 
 type PetCountState =
   | { status: "loading" }
@@ -39,7 +36,6 @@ const formatDate = (value: string): string => {
 
 const Profile = () => {
   const { user, logoutUser } = useAuth();
-  const navigation = useNavigation();
 
   const [petCountState, setPetCountState] =
     useState<PetCountState>({ status: "loading" });
@@ -68,12 +64,6 @@ const Profile = () => {
       void loadPetCount();
     }, [loadPetCount]),
   );
-
-  useEffect(() => {
-    if (user?.tipoUsuario !== "TUTOR") {
-      setPetCountState({ status: "ready", count: 0 });
-    }
-  }, [user?.tipoUsuario]);
 
   if (!user) {
     return (
@@ -212,185 +202,18 @@ const Profile = () => {
       )}
 
       <View style={{ gap: 14 }}>
-        <View
-          style={{
-            padding: 16,
-            borderRadius: 14,
-            backgroundColor: "#fff",
-            borderWidth: 1,
-            borderColor: "#e5e5e5",
-            elevation: 1,
-          }}
-        >
-          <Text
-            style={{
-              color: "#777",
-              fontSize: 13,
-              marginBottom: 5,
-            }}
-          >
-            Nome
-          </Text>
-
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: "600",
-            }}
-          >
-            {user.nome}
-          </Text>
-        </View>
-
-        <View
-          style={{
-            padding: 16,
-            borderRadius: 14,
-            backgroundColor: "#fff",
-            borderWidth: 1,
-            borderColor: "#e5e5e5",
-            elevation: 1,
-          }}
-        >
-          <Text
-            style={{
-              color: "#777",
-              fontSize: 13,
-              marginBottom: 5,
-            }}
-          >
-            E-mail
-          </Text>
-
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: "600",
-            }}
-          >
-            {user.email}
-          </Text>
-        </View>
-
-        <View
-          style={{
-            padding: 16,
-            borderRadius: 14,
-            backgroundColor: "#fff",
-            borderWidth: 1,
-            borderColor: "#e5e5e5",
-            elevation: 1,
-          }}
-        >
-          <Text
-            style={{
-              color: "#777",
-              fontSize: 13,
-              marginBottom: 5,
-            }}
-          >
-            Telefone
-          </Text>
-
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: "600",
-            }}
-          >
-            {user.telefone}
-          </Text>
-        </View>
-
-        <View
-          style={{
-            padding: 16,
-            borderRadius: 14,
-            backgroundColor: "#fff",
-            borderWidth: 1,
-            borderColor: "#e5e5e5",
-            elevation: 1,
-          }}
-        >
-          <Text
-            style={{
-              color: "#777",
-              fontSize: 13,
-              marginBottom: 5,
-            }}
-          >
-            Tipo de conta
-          </Text>
-
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: "600",
-            }}
-          >
-            {isVeterinarian ? "Veterinário" : "Tutor"}
-          </Text>
-        </View>
-
-        <View
-          style={{
-            padding: 16,
-            borderRadius: 14,
-            backgroundColor: "#fff",
-            borderWidth: 1,
-            borderColor: "#e5e5e5",
-            elevation: 1,
-          }}
-        >
-          <Text
-            style={{
-              color: "#777",
-              fontSize: 13,
-              marginBottom: 5,
-            }}
-          >
-            ID do usuário
-          </Text>
-
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: "600",
-            }}
-          >
-            {user.id}
-          </Text>
-        </View>
-
-        <View
-          style={{
-            padding: 16,
-            borderRadius: 14,
-            backgroundColor: "#fff",
-            borderWidth: 1,
-            borderColor: "#e5e5e5",
-            elevation: 1,
-          }}
-        >
-          <Text
-            style={{
-              color: "#777",
-              fontSize: 13,
-              marginBottom: 5,
-            }}
-          >
-            Conta criada em
-          </Text>
-
-          <Text
-            style={{
-              fontSize: 16,
-              fontWeight: "600",
-            }}
-          >
-            {formatDate(user.dataCriacao)}
-          </Text>
-        </View>
+        <InfoCard label="Nome" value={user.nome} />
+        <InfoCard label="E-mail" value={user.email} />
+        <InfoCard label="Telefone" value={user.telefone} />
+        <InfoCard
+          label="Tipo de conta"
+          value={isVeterinarian ? "Veterinário" : "Tutor"}
+        />
+        <InfoCard label="ID do usuário" value={user.id} />
+        <InfoCard
+          label="Conta criada em"
+          value={formatDate(user.dataCriacao)}
+        />
       </View>
 
       <TouchableOpacity

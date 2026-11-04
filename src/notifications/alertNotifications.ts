@@ -6,6 +6,14 @@ import type { Alerta } from "../types";
 const ALERTS_CHANNEL_ID = "petcenter-alerts";
 const NOTIFICATION_SOURCE = "petcenter-alert";
 
+const ensureNotificationsSupported = (): void => {
+  if (Platform.OS === "web") {
+    throw new Error(
+      "Notificações locais estão disponíveis no aplicativo Android ou iOS.",
+    );
+  }
+};
+
 export const hasAlertNotificationPermission = async (): Promise<boolean> => {
   if (Platform.OS === "web") {
     return false;
@@ -16,10 +24,6 @@ export const hasAlertNotificationPermission = async (): Promise<boolean> => {
 };
 
 const configureNotificationChannel = async (): Promise<void> => {
-  if (Platform.OS === "web") {
-    throw new Error("Notificações locais estão disponíveis no aplicativo Android ou iOS.");
-  }
-
   if (Platform.OS === "android") {
     await Notifications.setNotificationChannelAsync(ALERTS_CHANNEL_ID, {
       name: "Lembretes dos pets",
@@ -32,7 +36,9 @@ const configureNotificationChannel = async (): Promise<void> => {
 };
 
 export const requestAlertNotificationPermission = async (): Promise<void> => {
+  ensureNotificationsSupported();
   await configureNotificationChannel();
+
   const currentPermission = await Notifications.getPermissionsAsync();
   const permission = currentPermission.granted
     ? currentPermission
@@ -51,10 +57,7 @@ const isManagedAlertNotification = (
 ): boolean => {
   const data = notification.content.data;
 
-  return (
-    data.source === NOTIFICATION_SOURCE &&
-    data.userId === userId
-  );
+  return data.source === NOTIFICATION_SOURCE && data.userId === userId;
 };
 
 export const cancelAlertNotifications = async (
@@ -84,6 +87,10 @@ export const synchronizeAlertNotifications = async (
   userId: number,
   alerts: Alerta[],
 ): Promise<void> => {
+  if (Platform.OS === "web") {
+    return;
+  }
+
   const activeAlerts = alerts.filter((alert) => alert.ativo);
   await cancelAlertNotifications(userId);
 

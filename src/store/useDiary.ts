@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import {
   createPet,
@@ -20,6 +20,7 @@ import {
   createRecord,
   deleteRecord,
   listRecords,
+  toRegistro,
   updateRecord,
 } from "../api/records";
 
@@ -32,9 +33,14 @@ import type {
   PetDiary,
   Registro,
 } from "../types";
+import { isSameDay, isToday } from "../utils/date";
 
-const isRecordEditable = (createdAt: Date): boolean => {
+const isEditableToday = (createdAt: Date): boolean => {
   return isSameDay(createdAt, new Date());
+};
+
+const isDiaryEntryEditable = (entry: DiaryEntry): boolean => {
+  return isToday(entry.entryDate);
 };
 
 const buildPetsWithEntries = (
@@ -53,25 +59,24 @@ const buildPetsWithEntries = (
   }));
 };
 
-const isSameDay = (
-  firstDate?: string | Date,
-  secondDate?: string | Date,
-): boolean => {
-  if (!firstDate || !secondDate) {
-    return false;
-  }
+const updatePetInList = (
+  pets: PetDiary[],
+  petId: string,
+  update: (pet: PetDiary) => PetDiary,
+): PetDiary[] =>
+  pets.map((pet) => (pet.id === petId ? update(pet) : pet));
 
-  const first = new Date(firstDate);
-  const second = new Date(secondDate);
-
-  return (
-    !Number.isNaN(first.getTime()) &&
-    !Number.isNaN(second.getTime()) &&
-    first.getFullYear() === second.getFullYear() &&
-    first.getMonth() === second.getMonth() &&
-    first.getDate() === second.getDate()
-  );
-};
+const updateEntryInPets = (
+  pets: PetDiary[],
+  entryId: string,
+  update: (entry: DiaryEntry) => DiaryEntry,
+): PetDiary[] =>
+  pets.map((pet) => ({
+    ...pet,
+    entries: pet.entries.map((entry) =>
+      entry.id === entryId ? update(entry) : entry,
+    ),
+  }));
 
 export const useDiary = () => {
   const { user } = useAuth();
@@ -81,9 +86,14 @@ export const useDiary = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const loadRequestInProgress = useRef(false);
 
   const loadDiary = useCallback(
     async (refreshing = false): Promise<void> => {
+      if (loadRequestInProgress.current) {
+        return;
+      }
+
       if (!user) {
         setPets([]);
         setIsLoading(false);
@@ -91,6 +101,7 @@ export const useDiary = () => {
         return;
       }
 
+      loadRequestInProgress.current = true;
       try {
         if (refreshing) {
           setIsRefreshing(true);
@@ -110,26 +121,13 @@ export const useDiary = () => {
 
         const entries = diaryResponses.map(toDiaryEntry);
 
-        const records = recordResponses.map(
-          (record): Registro => ({
-            id: String(record.id),
-            entryId: String(record.idDiarioEntrada),
-            type: record.tipo,
-            subtype: record.subtipo,
-            value: record.valor,
-            unit: record.unidade,
-            note: record.nota,
-            createdAt: new Date(record.horario),
-            updatedAt: record.atualizadoEm
-              ? new Date(record.atualizadoEm)
-              : undefined,
-          }),
-        );
+        const records = recordResponses.map(toRegistro);
 
         setPets(buildPetsWithEntries(petsFromApi, entries, records));
       } catch (error) {
         console.error("Erro ao carregar diário:", error);
       } finally {
+        loadRequestInProgress.current = false;
         setIsLoading(false);
         setIsRefreshing(false);
       }
@@ -140,6 +138,11 @@ export const useDiary = () => {
   useEffect(() => {
     void loadDiary();
   }, [loadDiary]);
+
+  const refresh = useCallback(
+    () => loadDiary(true),
+    [loadDiary],
+  );
 
   const addPet = async (data: CreatePetData): Promise<void> => {
     if (user?.tipoUsuario !== "TUTOR") {
@@ -159,7 +162,7 @@ export const useDiary = () => {
     const updatedPet = await updatePet(petId, data);
 
     setPets((currentPets) =>
-      currentPets.map((pet) => (pet.id === petId ? updatedPet : pet)),
+      updatePetInList(currentPets, petId, () => updatedPet),
     );
   };
 
@@ -209,32 +212,43 @@ export const useDiary = () => {
       return;
     }
 
+    const entry = pets
+      .find((pet) => pet.id === petId)
+      ?.entries.find((currentEntry) => currentEntry.id === entryId);
+
+    if (!entry || !isDiaryEntryEditable(entry)) {
+      throw new Error(
+        "Este diário não pode mais ser alterado, pois pertence a um dia anterior.",
+      );
+    }
+
     const updatedEntry = await updateDiaryEntry(entryId, petId, text);
 
     setPets((currentPets) =>
-      currentPets.map((pet) => {
-        if (pet.id !== petId) {
-          return pet;
-        }
-
-        return {
-          ...pet,
-          entries: pet.entries.map((entry) =>
-            entry.id === entryId
-              ? {
-                  ...updatedEntry,
-                  records: entry.records,
-                }
-              : entry,
-          ),
-        };
-      }),
+      updatePetInList(currentPets, petId, (pet) => ({
+        ...pet,
+        entries: pet.entries.map((entry) =>
+          entry.id === entryId
+            ? { ...updatedEntry, records: entry.records }
+            : entry,
+        ),
+      })),
     );
   };
 
   const removeEntry = async (petId: string, entryId: string): Promise<void> => {
     if (user?.tipoUsuario !== "TUTOR") {
       return;
+    }
+
+    const entry = pets
+      .find((pet) => pet.id === petId)
+      ?.entries.find((currentEntry) => currentEntry.id === entryId);
+
+    if (!entry || !isDiaryEntryEditable(entry)) {
+      throw new Error(
+        "Este diário não pode mais ser excluído, pois pertence a um dia anterior.",
+      );
     }
 
     await deleteDiaryEntry(entryId);
@@ -261,19 +275,22 @@ export const useDiary = () => {
       return;
     }
 
+    const entry = pets
+      .flatMap((pet) => pet.entries)
+      .find((currentEntry) => currentEntry.id === entryId);
+
+    if (!entry || !isDiaryEntryEditable(entry)) {
+      throw new Error(
+        "Só é possível criar registros no diário do dia atual.",
+      );
+    }
+
     const record = await createRecord(entryId, data);
 
     setPets((currentPets) =>
-      currentPets.map((pet) => ({
-        ...pet,
-        entries: pet.entries.map((entry) =>
-          entry.id === entryId
-            ? {
-                ...entry,
-                records: [record, ...entry.records],
-              }
-            : entry,
-        ),
+      updateEntryInPets(currentPets, entryId, (entry) => ({
+        ...entry,
+        records: [record, ...entry.records],
       })),
     );
   };
@@ -295,7 +312,12 @@ export const useDiary = () => {
       (currentRecord) => currentRecord.id === recordId,
     );
 
-    if (!record || !isRecordEditable(record.createdAt)) {
+    if (
+      !entry ||
+      !record ||
+      !isDiaryEntryEditable(entry) ||
+      !isEditableToday(record.createdAt)
+    ) {
       throw new Error(
         "Este registro não pode mais ser alterado, pois pertence a um dia anterior.",
       );
@@ -304,17 +326,10 @@ export const useDiary = () => {
     const updatedRecord = await updateRecord(recordId, entryId, data);
 
     setPets((currentPets) =>
-      currentPets.map((pet) => ({
-        ...pet,
-        entries: pet.entries.map((currentEntry) =>
-          currentEntry.id === entryId
-            ? {
-                ...currentEntry,
-                records: currentEntry.records.map((currentRecord) =>
-                  currentRecord.id === recordId ? updatedRecord : currentRecord,
-                ),
-              }
-            : currentEntry,
+      updateEntryInPets(currentPets, entryId, (currentEntry) => ({
+        ...currentEntry,
+        records: currentEntry.records.map((currentRecord) =>
+          currentRecord.id === recordId ? updatedRecord : currentRecord,
         ),
       })),
     );
@@ -336,7 +351,12 @@ export const useDiary = () => {
       (currentRecord) => currentRecord.id === recordId,
     );
 
-    if (!record || !isRecordEditable(record.createdAt)) {
+    if (
+      !entry ||
+      !record ||
+      !isDiaryEntryEditable(entry) ||
+      !isEditableToday(record.createdAt)
+    ) {
       throw new Error(
         "Este registro não pode mais ser excluído, pois pertence a um dia anterior.",
       );
@@ -345,46 +365,13 @@ export const useDiary = () => {
     await deleteRecord(recordId);
 
     setPets((currentPets) =>
-      currentPets.map((pet) => ({
-        ...pet,
-        entries: pet.entries.map((currentEntry) =>
-          currentEntry.id === entryId
-            ? {
-                ...currentEntry,
-                records: currentEntry.records.filter(
-                  (currentRecord) => currentRecord.id !== recordId,
-                ),
-              }
-            : currentEntry,
+      updateEntryInPets(currentPets, entryId, (currentEntry) => ({
+        ...currentEntry,
+        records: currentEntry.records.filter(
+          (currentRecord) => currentRecord.id !== recordId,
         ),
       })),
     );
-  };
-
-  const editEntry = (
-    petId: string,
-    entryId: string,
-    updates: Partial<Omit<DiaryEntry, "id" | "createdAt" | "title">>,
-  ) => {
-    const updated = pets.map((pet) => {
-      if (pet.id !== petId) return pet;
-
-      const entries = pet.entries.map((e) => {
-        if (e.id !== entryId) return e;
-
-        return {
-          ...e,
-          ...updates,
-        } as DiaryEntry;
-      });
-
-      return {
-        ...pet,
-        entries,
-      };
-    });
-
-    setPets(updated);
   };
 
   return {
@@ -400,7 +387,8 @@ export const useDiary = () => {
     addRecord,
     editRecord,
     removeRecord,
-    refresh: () => loadDiary(true),
-    isRecordEditable,
+    refresh,
+    isEditableToday,
+    isDiaryEntryEditable,
   };
 };

@@ -4,16 +4,14 @@ import {
 } from "react";
 
 import {
-    Modal,
-    View,
     Text,
     TextInput,
     TouchableOpacity,
-    Pressable,
     ScrollView,
 } from "react-native";
 
 import { styles_th } from "../styles/theme";
+import ModalShell from "./ModalShell";
 
 import type {
     CreateRecordData,
@@ -167,85 +165,13 @@ const RecordFormModal = ({
         };
 
     return (
-        <Modal
+        <ModalShell
             visible={visible}
-            transparent
-            animationType="fade"
-            onRequestClose={() => {
-                if (!isSubmitting) {
-                    onClose();
-                }
-            }}
+            title="Editar registro"
+            onClose={onClose}
+            isSubmitting={isSubmitting}
         >
-            <View
-                style={{
-                    flex: 1,
-                    backgroundColor:
-                        "rgba(0,0,0,0.4)",
-                    justifyContent: "center",
-                    padding: 20,
-                }}
-            >
-                <Pressable
-                    style={{
-                        position: "absolute",
-                        top: 0,
-                        right: 0,
-                        bottom: 0,
-                        left: 0,
-                    }}
-                    onPress={() => {
-                        if (!isSubmitting) {
-                            onClose();
-                        }
-                    }}
-                />
-
-                <View
-                    style={{
-                        backgroundColor:
-                            "#fff",
-                        borderRadius: 20,
-                        padding: 20,
-                        maxHeight: "90%",
-                    }}
-                >
-                    <ScrollView>
-                        <View
-                            style={{
-                                flexDirection:
-                                    "row",
-                                justifyContent:
-                                    "space-between",
-                                alignItems:
-                                    "center",
-                            }}
-                        >
-                            <Text
-                                style={
-                                    styles_th.title
-                                }
-                            >
-                                Editar registro
-                            </Text>
-
-                            <TouchableOpacity
-                                onPress={
-                                    onClose
-                                }
-                            >
-                                <Text
-                                    style={{
-                                        fontSize: 26,
-                                        color:
-                                            "#777",
-                                    }}
-                                >
-                                    ×
-                                </Text>
-                            </TouchableOpacity>
-                        </View>
-
+                    <ScrollView style={{ flexShrink: 1 }}>
                         <TextInput
                             placeholder="Tipo *"
                             value={type}
@@ -260,7 +186,7 @@ const RecordFormModal = ({
                         />
 
                         <TextInput
-                            placeholder="Subtipo"
+                            placeholder="Subtipo (opcional)"
                             value={subtype}
                             onChangeText={
                                 setSubtype
@@ -275,7 +201,7 @@ const RecordFormModal = ({
                         />
 
                         <TextInput
-                            placeholder="Valor"
+                            placeholder="Valor (opcional)"
                             value={value}
                             onChangeText={
                                 setValue
@@ -291,7 +217,7 @@ const RecordFormModal = ({
                         />
 
                         <TextInput
-                            placeholder="Unidade"
+                            placeholder="Unidade (opcional)"
                             value={unit}
                             onChangeText={setUnit}
                             style={[
@@ -304,7 +230,7 @@ const RecordFormModal = ({
                         />
 
                         <TextInput
-                            placeholder="Observações"
+                            placeholder="Observações (opcional)"
                             value={note}
                             onChangeText={setNote}
                             multiline
@@ -368,9 +294,7 @@ const RecordFormModal = ({
                             </Text>
                         </TouchableOpacity>
                     </ScrollView>
-                </View>
-            </View>
-        </Modal>
+        </ModalShell>
     );
 };
 

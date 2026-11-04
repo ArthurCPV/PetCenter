@@ -1,39 +1,26 @@
-import React, {
-  useCallback,
-  useMemo,
-  useState,
-} from "react";
-
+import React, { useCallback, useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   BackHandler,
-  View,
-  Text,
   FlatList,
-  Modal,
+  Text,
   TouchableOpacity,
-  Pressable,
-  ScrollView,
-  ActivityIndicator,
+  View,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect } from "@react-navigation/native";
 
-import {
-  useFocusEffect,
-} from "@react-navigation/native";
-
-import {
-  styles_th,
-} from "../../styles/theme";
-
-import {
-  useDiary,
-} from "../../store/useDiary";
-
-import {
-  useAuth,
-} from "../../auth/AuthContext";
-
+import { useAuth } from "../../auth/AuthContext";
+import CreatePetModal from "../../components/CreatePetModal";
+import DiaryTextModal from "../../components/DiaryTextModal";
+import EntryCard from "../../components/EntryCard";
+import EntryDetailsModal from "../../components/EntryDetailsModal";
+import Form from "../../components/Form";
+import PetCard from "../../components/PetCard";
+import PetFilter from "../../components/PetFilter";
+import RecordFormModal from "../../components/RecordFormModal";
+import { styles_th } from "../../styles/theme";
+import { useDiary } from "../../store/useDiary";
 import type {
   CreatePetData,
   CreateRecordData,
@@ -41,63 +28,30 @@ import type {
   PetDiary,
   Registro,
 } from "../../types";
+import { isToday } from "../../utils/date";
 
-import CreatePetModal from "../../components/CreatePetModal";
-import PetCard from "../../components/PetCard";
-import PetFilter from "../../components/PetFilter";
-import Form from "../../components/Form";
-import EntryCard from "../../components/EntryCard";
-import RecordFormModal from "../../components/RecordFormModal";
-import DiaryEntryEditModal from "../../components/DiaryEntryEditModal";
-
-const isSameDay = (
-  dateA: Date,
-  dateB: Date,
-): boolean => {
-  return (
-    dateA.getFullYear() ===
-    dateB.getFullYear() &&
-    dateA.getMonth() ===
-    dateB.getMonth() &&
-    dateA.getDate() ===
-    dateB.getDate()
-  );
-};
-
-const getEntryTitle = (
-  createdAt: Date,
-): string => {
-  const today =
-    new Date();
-
-  if (
-    isSameDay(
-      createdAt,
-      today,
-    )
-  ) {
-    return "Registro de hoje";
-  }
-
-  const yesterday =
-    new Date(today);
-
-  yesterday.setDate(
-    today.getDate() - 1,
-  );
-
-  if (
-    isSameDay(
-      createdAt,
-      yesterday,
-    )
-  ) {
-    return "Registro de ontem";
-  }
-
-  return `Registro de ${createdAt.toLocaleDateString(
-    "pt-BR",
-  )}`;
+const confirmDelete = (
+  title: string,
+  message: string,
+  onConfirm: () => Promise<void>,
+  errorTitle: string,
+  errorMessage: string,
+): void => {
+  Alert.alert(title, message, [
+    { text: "Cancelar", style: "cancel" },
+    {
+      text: "Excluir",
+      style: "destructive",
+      onPress: () => {
+        void onConfirm().catch((error: unknown) => {
+          Alert.alert(
+            errorTitle,
+            error instanceof Error ? error.message : errorMessage,
+          );
+        });
+      },
+    },
+  ]);
 };
 
 const Diary = () => {
@@ -115,120 +69,40 @@ const Diary = () => {
     isLoading,
     isRefreshing,
     refresh,
-    isRecordEditable,
+    isEditableToday,
+    isDiaryEntryEditable,
   } = useDiary();
+  const { user } = useAuth();
+  const isTutor = user?.tipoUsuario === "TUTOR";
 
-  const { user } =
-    useAuth();
+  const [selectedPetId, setSelectedPetId] = useState<string>();
+  const [petSearch, setPetSearch] = useState("");
+  const [selectedPetFilterId, setSelectedPetFilterId] = useState<string>();
+  const [selectedEntryId, setSelectedEntryId] = useState<string>();
+  const [createPetModalVisible, setCreatePetModalVisible] = useState(false);
+  const [petBeingEdited, setPetBeingEdited] = useState<PetDiary>();
+  const [recordModalVisible, setRecordModalVisible] = useState(false);
+  const [recordBeingEdited, setRecordBeingEdited] = useState<Registro>();
+  const [diaryEditVisible, setDiaryEditVisible] = useState(false);
+  const [diaryBeingEdited, setDiaryBeingEdited] = useState<DiaryEntry>();
 
-  const isTutor =
-    user?.tipoUsuario ===
-    "TUTOR";
-
-  const [
-    selectedPetId,
-    setSelectedPetId,
-  ] = useState<
-    string | undefined
-  >(undefined);
-
-  const [
-    petSearch,
-    setPetSearch,
-  ] = useState("");
-
-  const [
-    selectedPetFilterId,
-    setSelectedPetFilterId,
-  ] = useState<string | undefined>();
-
-  const [
-    selectedEntryId,
-    setSelectedEntryId,
-  ] = useState<
-    string | undefined
-  >(undefined);
-
-  const [
-    createPetModalVisible,
-    setCreatePetModalVisible,
-  ] = useState(false);
-
-  const [
-    petBeingEdited,
-    setPetBeingEdited,
-  ] = useState<PetDiary | undefined>(undefined);
-
-  const [
-    recordModalVisible,
-    setRecordModalVisible,
-  ] = useState(false);
-
-  const [
-    recordBeingEdited,
-    setRecordBeingEdited,
-  ] = useState<
-    Registro | undefined
-  >(undefined);
-
-  const [
-    diaryEditVisible,
-    setDiaryEditVisible,
-  ] = useState(false);
-
-  const [
-    diaryBeingEdited,
-    setDiaryBeingEdited,
-  ] = useState<
-    DiaryEntry | undefined
-  >(undefined);
-
-  const selectedPet =
-    useMemo(
-      () =>
-        pets.find(
-          (pet) =>
-            pet.id ===
-            selectedPetId,
-        ),
-      [
-        pets,
-        selectedPetId,
-      ],
-    );
-
-  const selectedEntry =
-    useMemo(
-      () =>
-        selectedPet?.entries.find(
-          (entry) =>
-            entry.id ===
-            selectedEntryId,
-        ),
-      [
-        selectedPet,
-        selectedEntryId,
-      ],
-    );
-
-  const todayEntry =
-    selectedPet?.entries.find(
-      (entry) =>
-        isSameDay(
-          new Date(
-            entry.createdAt,
-          ),
-          new Date(),
-        ),
-    );
-
+  const selectedPet = useMemo(
+    () => pets.find((pet) => pet.id === selectedPetId),
+    [pets, selectedPetId],
+  );
+  const selectedEntry = useMemo(
+    () => selectedPet?.entries.find((entry) => entry.id === selectedEntryId),
+    [selectedPet, selectedEntryId],
+  );
+  const todayEntry = selectedPet?.entries.find((entry) =>
+    isToday(entry.entryDate),
+  );
   const filteredPets = useMemo(() => {
     const query = petSearch.trim().toLocaleLowerCase();
 
     return pets.filter((pet) => {
       const matchesPet =
-        selectedPetFilterId === undefined ||
-        pet.id === selectedPetFilterId;
+        selectedPetFilterId === undefined || pet.id === selectedPetFilterId;
       const matchesSearch =
         !query ||
         pet.name.toLocaleLowerCase().includes(query) ||
@@ -240,101 +114,74 @@ const Diary = () => {
 
   useFocusEffect(
     useCallback(() => {
-      const subscription =
-        BackHandler.addEventListener(
-          "hardwareBackPress",
-          () => {
-            if (
-              recordModalVisible
-            ) {
-              setRecordModalVisible(
-                false,
-              );
-              setRecordBeingEdited(
-                undefined,
-              );
-              return true;
-            }
+      const subscription = BackHandler.addEventListener(
+        "hardwareBackPress",
+        () => {
+          if (recordModalVisible) {
+            setRecordModalVisible(false);
+            setRecordBeingEdited(undefined);
+            return true;
+          }
 
-            if (
-              diaryEditVisible
-            ) {
-              setDiaryEditVisible(
-                false,
-              );
-              setDiaryBeingEdited(
-                undefined,
-              );
-              return true;
-            }
+          if (diaryEditVisible) {
+            setDiaryEditVisible(false);
+            setDiaryBeingEdited(undefined);
+            return true;
+          }
 
-            if (
-              selectedEntryId !==
-              undefined
-            ) {
-              setSelectedEntryId(
-                undefined,
-              );
-              return true;
-            }
+          if (selectedEntryId !== undefined) {
+            setSelectedEntryId(undefined);
+            return true;
+          }
 
-            if (
-              selectedPetId !==
-              undefined
-            ) {
-              setSelectedPetId(
-                undefined,
-              );
-              return true;
-            }
+          if (selectedPetId !== undefined) {
+            setSelectedPetId(undefined);
+            return true;
+          }
 
-            return false;
-          },
-        );
+          return false;
+        },
+      );
 
-      return () =>
-        subscription.remove();
+      return () => subscription.remove();
     }, [
-      recordModalVisible,
       diaryEditVisible,
+      recordModalVisible,
       selectedEntryId,
       selectedPetId,
     ]),
   );
 
-  const handleEntrySubmit =
-    async (
-      text: string,
-    ): Promise<void> => {
-      if (!selectedPet) {
-        return;
-      }
+  useFocusEffect(
+    useCallback(() => {
+      void refresh();
+      const interval = setInterval(() => {
+        void refresh();
+      }, 10_000);
 
-      if (todayEntry) {
-        await updateEntry(
-          selectedPet.id,
-          todayEntry.id,
-          text,
-        );
-        return;
-      }
+      return () => clearInterval(interval);
+    }, [refresh]),
+  );
 
-      await addEntry(
-        selectedPet.id,
-        text,
-      );
-    };
+  const handleEntrySubmit = async (text: string): Promise<void> => {
+    if (!selectedPet) {
+      return;
+    }
 
-  const handleEditPet = (
-    pet: PetDiary,
-  ): void => {
+    if (todayEntry) {
+      await updateEntry(selectedPet.id, todayEntry.id, text);
+      return;
+    }
+
+    await addEntry(selectedPet.id, text);
+  };
+
+  const handleEditPet = (pet: PetDiary): void => {
     setPetBeingEdited(pet);
     setCreatePetModalVisible(true);
   };
 
-  const handleSavePet = async (
-    data: CreatePetData,
-  ): Promise<void> => {
+  const handleSavePet = async (data: CreatePetData): Promise<void> => {
     if (!petBeingEdited) {
       await addPet(data);
       return;
@@ -345,265 +192,142 @@ const Diary = () => {
   };
 
   const handleDeletePet = (pet: PetDiary): void => {
-    Alert.alert(
+    confirmDelete(
       "Excluir diário do pet",
       `Tem certeza que deseja excluir o diário de ${pet.name}?`,
-      [
-        { text: "Cancelar", style: "cancel" },
-        {
-          text: "Excluir",
-          style: "destructive",
-          onPress: () => {
-            void (async () => {
-              try {
-                await removePet(pet.id);
+      async () => {
+        await removePet(pet.id);
 
-                if (selectedPetId === pet.id) {
-                  setSelectedPetId(undefined);
-                  setSelectedEntryId(undefined);
-                }
-              } catch (error) {
-                Alert.alert(
-                  "Não foi possível excluir",
-                  error instanceof Error
-                    ? error.message
-                    : "Não foi possível excluir o diário do pet.",
-                );
-              }
-            })();
-          },
-        },
-      ],
+        if (selectedPetId === pet.id) {
+          setSelectedPetId(undefined);
+          setSelectedEntryId(undefined);
+        }
+      },
+      "Não foi possível excluir",
+      "Não foi possível excluir o diário do pet.",
     );
   };
 
-  const handleEditEntry =
-    (
-      entry: DiaryEntry,
-    ): void => {
-      setDiaryBeingEdited(
-        entry,
-      );
-      setDiaryEditVisible(
-        true,
-      );
-    };
-
-  const handleEditDiary =
-    async (
-      text: string,
-    ): Promise<void> => {
-      if (
-        !selectedPet ||
-        !diaryBeingEdited
-      ) {
-        return;
-      }
-
-      await updateEntry(
-        selectedPet.id,
-        diaryBeingEdited.id,
-        text,
-      );
-    };
-
-  const handleDeleteEntry =
-    (
-      entry: DiaryEntry,
-    ): void => {
-      if (!selectedPet) {
-        return;
-      }
-
+  const handleEditEntry = (entry: DiaryEntry): void => {
+    if (!isDiaryEntryEditable(entry)) {
       Alert.alert(
-        "Excluir diário",
-        "Tem certeza que deseja excluir este diário?",
-        [
-          {
-            text: "Cancelar",
-            style: "cancel",
-          },
-          {
-            text: "Excluir",
-            style: "destructive",
-            onPress: () => {
-              void (async () => {
-                try {
-                  await removeEntry(
-                    selectedPet.id,
-                    entry.id,
-                  );
-
-                  if (
-                    selectedEntryId ===
-                    entry.id
-                  ) {
-                    setSelectedEntryId(
-                      undefined,
-                    );
-                  }
-                } catch (
-                error
-                ) {
-                  Alert.alert(
-                    "Não foi possível excluir",
-                    error instanceof
-                      Error
-                      ? error.message
-                      : "Existem registros vinculados a este diário.",
-                  );
-                }
-              })();
-            },
-          },
-        ],
+        "Diário encerrado",
+        "Este diário pertence a um dia anterior e não pode mais ser alterado.",
       );
-    };
+      return;
+    }
 
-  const openEditRecord =
-    (
-      record: Registro,
-    ): void => {
-      if (
-        !isRecordEditable(
-          record.createdAt,
-        )
-      ) {
-        Alert.alert(
-          "Registro bloqueado",
-          "Este registro pertence a um dia anterior e não pode mais ser alterado.",
-        );
-        return;
-      }
+    setDiaryBeingEdited(entry);
+    setDiaryEditVisible(true);
+  };
 
-      setRecordBeingEdited(
-        record,
-      );
+  const handleEditDiary = async (text: string): Promise<void> => {
+    if (!selectedPet || !diaryBeingEdited) {
+      return;
+    }
 
-      setRecordModalVisible(
-        true,
-      );
-    };
+    await updateEntry(selectedPet.id, diaryBeingEdited.id, text);
+  };
 
-  const handleSaveRecord =
-    async (
-      data: CreateRecordData,
-    ): Promise<void> => {
-      if (
-        !selectedEntry
-      ) {
-        return;
-      }
+  const handleDeleteEntry = (entry: DiaryEntry): void => {
+    if (!selectedPet) {
+      return;
+    }
 
-      if (
-        recordBeingEdited
-      ) {
-        await editRecord(
-          selectedEntry.id,
-          recordBeingEdited.id,
-          data,
-        );
-      } else {
-        await addRecord(
-          selectedEntry.id,
-          data,
-        );
-      }
-    };
-
-  const handleDeleteRecord =
-    (
-      record: Registro,
-    ): void => {
-      if (
-        !selectedEntry
-      ) {
-        return;
-      }
-
-      if (
-        !isRecordEditable(
-          record.createdAt,
-        )
-      ) {
-        Alert.alert(
-          "Registro bloqueado",
-          "Este registro pertence a um dia anterior e não pode mais ser excluído.",
-        );
-        return;
-      }
-
+    if (!isDiaryEntryEditable(entry)) {
       Alert.alert(
-        "Excluir registro",
-        "Tem certeza que deseja excluir este registro?",
-        [
-          {
-            text: "Cancelar",
-            style: "cancel",
-          },
-          {
-            text: "Excluir",
-            style: "destructive",
-            onPress: () => {
-              void (async () => {
-                try {
-                  await removeRecord(
-                    selectedEntry.id,
-                    record.id,
-                  );
-                } catch (
-                error
-                ) {
-                  Alert.alert(
-                    "Não foi possível excluir",
-                    error instanceof
-                      Error
-                      ? error.message
-                      : "Não foi possível excluir o registro.",
-                  );
-                }
-              })();
-            },
-          },
-        ],
+        "Diário encerrado",
+        "Este diário pertence a um dia anterior e não pode mais ser excluído.",
       );
-    };
+      return;
+    }
 
-  const handleSelectPet =
-    (
-      petId: string,
-    ): void => {
-      setSelectedEntryId(
-        undefined,
+    confirmDelete(
+      "Excluir diário",
+      "Tem certeza que deseja excluir este diário?",
+      async () => {
+        await removeEntry(selectedPet.id, entry.id);
+
+        if (selectedEntryId === entry.id) {
+          setSelectedEntryId(undefined);
+        }
+      },
+      "Não foi possível excluir",
+      "Existem registros vinculados a este diário.",
+    );
+  };
+
+  const openEditRecord = (record: Registro): void => {
+    if (
+      !selectedEntry ||
+      !isDiaryEntryEditable(selectedEntry) ||
+      !isEditableToday(record.createdAt)
+    ) {
+      Alert.alert(
+        "Registro bloqueado",
+        "Este registro pertence a um dia anterior e não pode mais ser alterado.",
       );
-      setSelectedPetId(
-        petId,
+      return;
+    }
+
+    setRecordBeingEdited(record);
+    setRecordModalVisible(true);
+  };
+
+  const handleSaveRecord = async (
+    data: CreateRecordData,
+  ): Promise<void> => {
+    if (!selectedEntry) {
+      return;
+    }
+
+    if (recordBeingEdited) {
+      await editRecord(selectedEntry.id, recordBeingEdited.id, data);
+    } else {
+      await addRecord(selectedEntry.id, data);
+    }
+  };
+
+  const handleDeleteRecord = (record: Registro): void => {
+    if (!selectedEntry) {
+      return;
+    }
+
+    if (
+      !isDiaryEntryEditable(selectedEntry) ||
+      !isEditableToday(record.createdAt)
+    ) {
+      Alert.alert(
+        "Registro bloqueado",
+        "Este registro pertence a um dia anterior e não pode mais ser excluído.",
       );
-    };
+      return;
+    }
+
+    confirmDelete(
+      "Excluir registro",
+      "Tem certeza que deseja excluir este registro?",
+      () => removeRecord(selectedEntry.id, record.id),
+      "Não foi possível excluir",
+      "Não foi possível excluir o registro.",
+    );
+  };
+
+  const handleSelectPet = (petId: string): void => {
+    setSelectedEntryId(undefined);
+    setSelectedPetId(petId);
+  };
 
   if (isLoading) {
     return (
       <View
         style={[
           styles_th.container,
-          {
-            justifyContent:
-              "center",
-            alignItems:
-              "center",
-          },
+          { justifyContent: "center", alignItems: "center" },
         ]}
       >
-        <ActivityIndicator
-          size="large"
-        />
-
-        <Text
-          style={{
-            marginTop: 12,
-            color: "#666",
-          }}
-        >
+        <ActivityIndicator size="large" />
+        <Text style={{ marginTop: 12, color: "#666" }}>
           Carregando diários...
         </Text>
       </View>
@@ -611,29 +335,10 @@ const Diary = () => {
   }
 
   return (
-    <View
-      style={
-        styles_th.container
-      }
-    >
-      <View
-        style={
-          styles_th.header
-        }
-      >
-        <Text
-          style={
-            styles_th.title
-          }
-        >
-          PetCenter
-        </Text>
-
-        <Text
-          style={
-            styles_th.subtitle
-          }
-        >
+    <View style={styles_th.container}>
+      <View style={styles_th.header}>
+        <Text style={styles_th.title}>PetCenter</Text>
+        <Text style={styles_th.subtitle}>
           {isTutor
             ? "Diário inteligente do seu pet"
             : "Visualização veterinária dos pets"}
@@ -649,50 +354,39 @@ const Diary = () => {
                   styles_th.button,
                   {
                     width: "90%",
-                    alignSelf:
-                      "center",
-                    borderRadius:
-                      16,
-                    marginBottom:
-                      20,
+                    alignSelf: "center",
+                    borderRadius: 16,
+                    marginBottom: 20,
                     marginLeft: 0,
                   },
                 ]}
-                onPress={() =>
-                  setCreatePetModalVisible(
-                    true,
-                  )
-                }
+                onPress={() => setCreatePetModalVisible(true)}
               >
                 <Text
-                  style={{
-                    color:
-                      "#fff",
-                    fontWeight:
-                      "bold",
-                    fontSize: 16,
-                  }}
+                  style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}
                 >
                   + Criar Diário
                 </Text>
               </TouchableOpacity>
 
               <CreatePetModal
-                visible={
-                  createPetModalVisible
-                }
+                visible={createPetModalVisible}
                 initialData={
                   petBeingEdited
                     ? {
-                      name: petBeingEdited.name,
-                      species: petBeingEdited.species,
-                      breed: petBeingEdited.breed,
-                      birthDate: petBeingEdited.birthDate,
-                    }
+                        name: petBeingEdited.name,
+                        species: petBeingEdited.species,
+                        breed: petBeingEdited.breed,
+                        birthDate: petBeingEdited.birthDate,
+                      }
                     : undefined
                 }
-                title={petBeingEdited ? "Editar diário do pet" : "Novo Diário"}
-                submitLabel={petBeingEdited ? "Salvar alterações" : "Criar Diário"}
+                title={
+                  petBeingEdited ? "Editar diário do pet" : "Novo Diário"
+                }
+                submitLabel={
+                  petBeingEdited ? "Salvar alterações" : "Criar Diário"
+                }
                 onClose={() => {
                   setCreatePetModalVisible(false);
                   setPetBeingEdited(undefined);
@@ -704,23 +398,12 @@ const Diary = () => {
             <View
               style={{
                 width: "90%",
-                alignSelf:
-                  "center",
-                marginBottom:
-                  20,
+                alignSelf: "center",
+                marginBottom: 20,
               }}
             >
-              <Text
-                style={{
-                  color:
-                    "#666",
-                  textAlign:
-                    "center",
-                }}
-              >
-                Aqui você pode
-                consultar os
-                diários dos pets.
+              <Text style={{ color: "#666", textAlign: "center" }}>
+                Aqui você pode consultar os diários dos pets.
               </Text>
             </View>
           )}
@@ -735,21 +418,12 @@ const Diary = () => {
             />
           ) : undefined}
 
-          <FlatList
+          <FlatList<PetDiary>
             data={isTutor ? pets : filteredPets}
-            keyExtractor={(
-              item,
-            ) =>
-              item.id}
-            refreshing={
-              isRefreshing
-            }
-            onRefresh={() =>
-              void refresh()
-            }
-            renderItem={({
-              item,
-            }) => (
+            keyExtractor={(item) => item.id}
+            refreshing={isRefreshing}
+            onRefresh={() => void refresh()}
+            renderItem={({ item }) => (
               <PetCard
                 pet={item}
                 onPress={() => handleSelectPet(item.id)}
@@ -758,11 +432,7 @@ const Diary = () => {
               />
             )}
             ListEmptyComponent={
-              <Text
-                style={
-                  styles_th.emptyText
-                }
-              >
+              <Text style={styles_th.emptyText}>
                 {isTutor
                   ? "Nenhum diário criado ainda ✨"
                   : petSearch || selectedPetFilterId
@@ -776,492 +446,101 @@ const Diary = () => {
         <>
           <TouchableOpacity
             onPress={() => {
-              setSelectedEntryId(
-                undefined,
-              );
-              setSelectedPetId(
-                undefined,
-              );
+              setSelectedEntryId(undefined);
+              setSelectedPetId(undefined);
             }}
           >
-            <Text
-              style={{
-                color:
-                  "#E53935",
-                fontWeight:
-                  "600",
-              }}
-            >
+            <Text style={{ color: "#E53935", fontWeight: "600" }}>
               ← Voltar
             </Text>
           </TouchableOpacity>
 
-          <Text
-            style={[
-              styles_th.sectionTitle,
-              {
-                fontSize: 20,
-              },
-            ]}
-          >
-            Diário de{" "}
-            {
-              selectedPet.name
-            }
+          <Text style={[styles_th.sectionTitle, { fontSize: 20 }]}>
+            Diário de {selectedPet.name}
           </Text>
 
           {isTutor ? (
             <Form
-              initialText={
-                todayEntry?.title ??
-                ""
-              }
-              hasTodayEntry={
-                todayEntry !==
-                undefined
-              }
+              initialText={todayEntry?.title ?? ""}
+              hasTodayEntry={todayEntry !== undefined}
               onSubmit={handleEntrySubmit}
             />
           ) : (
             <Text
               style={{
-                marginHorizontal:
-                  20,
-                marginBottom:
-                  15,
-                color:
-                  "#777",
-                textAlign:
-                  "center",
+                marginHorizontal: 20,
+                marginBottom: 15,
+                color: "#777",
+                textAlign: "center",
               }}
             >
               Modo de visualização veterinária
             </Text>
           )}
 
-          <FlatList
-            data={
-              selectedPet.entries
-            }
-            keyExtractor={(
-              item,
-            ) =>
-              item.id}
-            renderItem={({
-              item,
-            }) => (
+          <FlatList<DiaryEntry>
+            data={selectedPet.entries}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
               <EntryCard
                 entry={item}
                 isTutor={isTutor}
-                onPress={() =>
-                  setSelectedEntryId(
-                    item.id,
-                  )
-                }
-                onEdit={() =>
-                  handleEditEntry(
-                    item,
-                  )
-                }
-                onDelete={() =>
-                  handleDeleteEntry(
-                    item,
-                  )
-                }
+                isEditable={isDiaryEntryEditable(item)}
+                onPress={() => setSelectedEntryId(item.id)}
+                onEdit={() => handleEditEntry(item)}
+                onDelete={() => handleDeleteEntry(item)}
               />
             )}
             ListEmptyComponent={
-              <Text
-                style={
-                  styles_th.emptyText
-                }
-              >
-                Nenhum registro ainda.
-              </Text>
+              <Text style={styles_th.emptyText}>Nenhum registro ainda.</Text>
             }
           />
 
-          <Modal
-            visible={
-              selectedEntry !==
-              undefined
-            }
-            transparent
-            animationType="fade"
-            onRequestClose={() =>
-              setSelectedEntryId(
-                undefined,
-              )
-            }
-          >
-            <View
-              style={{
-                flex: 1,
-                backgroundColor:
-                  "rgba(0,0,0,0.5)",
-                justifyContent:
-                  "center",
-                padding: 20,
-              }}
-            >
-              <Pressable
-                style={{
-                  position:
-                    "absolute",
-                  top: 0,
-                  right: 0,
-                  bottom: 0,
-                  left: 0,
-                }}
-                onPress={() =>
-                  setSelectedEntryId(
-                    undefined,
-                  )
-                }
-              />
-
-              <View
-                style={{
-                  backgroundColor:
-                    "#fff",
-                  borderRadius: 20,
-                  padding: 20,
-                  maxHeight:
-                    "90%",
-                }}
-              >
-                <ScrollView
-                  keyboardShouldPersistTaps="handled"
-                >
-                  {selectedEntry ? (
-                    <>
-                      <Text
-                        style={
-                          styles_th.title
-                        }
-                      >
-                        {getEntryTitle(
-                          new Date(
-                            selectedEntry.createdAt,
-                          ),
-                        )}
-                      </Text>
-
-                      <Text
-                        style={{
-                          marginTop: 20,
-                          fontSize: 16,
-                          lineHeight: 24,
-                        }}
-                      >
-                        {
-                          selectedEntry.title
-                        }
-                      </Text>
-
-                      <Text
-                        style={{
-                          marginTop: 10,
-                          color:
-                            "#777",
-                        }}
-                      >
-                        {new Date(
-                          selectedEntry.createdAt,
-                        ).toLocaleString(
-                          "pt-BR",
-                        )}
-                      </Text>
-
-                      {selectedEntry.records.length > 0 ? (
-                        <View
-                          style={{
-                            marginTop: 25,
-                          }}
-                        >
-                          {selectedEntry.records.length > 0 ? selectedEntry.records.map(
-                            (
-                              record,
-                            ) => {
-                              const editable =
-                                isRecordEditable(
-                                  record.createdAt,
-                                );
-
-                              return (
-                                <View
-                                  key={
-                                    record.id
-                                  }
-                                  style={{
-                                    marginTop: 10,
-                                    padding: 14,
-                                    borderRadius: 14,
-                                    borderWidth: 1,
-                                    borderColor:
-                                      "#ddd",
-                                  }}
-                                >
-                                  <Text
-                                    style={{
-                                      fontWeight:
-                                        "bold",
-                                      fontSize: 16,
-                                    }}
-                                  >
-                                    {
-                                      record.type
-                                    }
-                                  </Text>
-
-                                  {record.subtype ? (
-                                    <Text
-                                      style={{
-                                        marginTop: 4,
-                                        color:
-                                          "#555",
-                                      }}
-                                    >
-                                      Subtipo:{" "}
-                                      {
-                                        record.subtype
-                                      }
-                                    </Text>
-                                  ) : undefined}
-
-                                  {record.value !==
-                                    undefined ? (
-                                    <Text
-                                      style={{
-                                        marginTop: 4,
-                                        color:
-                                          "#555",
-                                      }}
-                                    >
-                                      Valor:{" "}
-                                      {
-                                        record.value
-                                      }{" "}
-                                      {
-                                        record.unit ??
-                                        ""
-                                      }
-                                    </Text>
-                                  ) : undefined}
-
-                                  {record.note ? (
-                                    <Text
-                                      style={{
-                                        marginTop: 4,
-                                        color:
-                                          "#555",
-                                      }}
-                                    >
-                                      {
-                                        record.note
-                                      }
-                                    </Text>
-                                  ) : undefined}
-
-                                  <Text
-                                    style={{
-                                      marginTop: 6,
-                                      color:
-                                        "#888",
-                                      fontSize: 12,
-                                    }}
-                                  >
-                                    {record.createdAt.toLocaleString(
-                                      "pt-BR",
-                                    )}
-                                  </Text>
-
-                                  {isTutor &&
-                                    editable ? (
-                                    <View
-                                      style={{
-                                        flexDirection:
-                                          "row",
-                                        gap: 10,
-                                        marginTop: 10,
-                                      }}
-                                    >
-                                      <TouchableOpacity
-                                        onPress={() =>
-                                          openEditRecord(
-                                            record,
-                                          )
-                                        }
-                                        style={{
-                                          flex: 1,
-                                          padding: 9,
-                                          borderRadius:
-                                            10,
-                                          borderWidth:
-                                            1,
-                                          borderColor:
-                                            "#E53935",
-                                          alignItems:
-                                            "center",
-                                        }}
-                                      >
-                                        <Text
-                                          style={{
-                                            color:
-                                              "#E53935",
-                                            fontWeight:
-                                              "bold",
-                                          }}
-                                        >
-                                          ✎ Editar registro
-                                        </Text>
-                                      </TouchableOpacity>
-
-                                      <TouchableOpacity
-                                        onPress={() =>
-                                          handleDeleteRecord(
-                                            record,
-                                          )
-                                        }
-                                        style={{
-                                          flex: 1,
-                                          padding: 9,
-                                          borderRadius:
-                                            10,
-                                          borderWidth:
-                                            1,
-                                          borderColor:
-                                            "#B71C1C",
-                                          alignItems:
-                                            "center",
-                                        }}
-                                      >
-                                        <Text
-                                          style={{
-                                            color:
-                                              "#B71C1C",
-                                            fontWeight:
-                                              "bold",
-                                          }}
-                                        >
-                                          🗑 Excluir registro
-                                        </Text>
-                                      </TouchableOpacity>
-                                    </View>
-                                  ) : undefined}
-
-                                  {isTutor &&
-                                    !editable ? (
-                                    <Text
-                                      style={{
-                                        marginTop: 10,
-                                        color:
-                                          "#999",
-                                        fontSize: 12,
-                                      }}
-                                    >
-                                      Registro encerrado. Alterações não são mais permitidas após a meia-noite.
-                                    </Text>
-                                  ) : undefined}
-                                </View>
-                              );
-                            },
-                          ) : undefined}
-                        </View>
-                      ) : undefined}
-                    </>
-                  ) : undefined}
-
-                  <TouchableOpacity
-                    style={[
-                      styles_th.button,
-                      {
-                        width:
-                          "100%",
-                        marginLeft:
-                          0,
-                        marginTop:
-                          20,
-                        borderRadius:
-                          16,
-                      },
-                    ]}
-                    onPress={() =>
-                      setSelectedEntryId(
-                        undefined,
-                      )
-                    }
-                  >
-                    <Text
-                      style={{
-                        color:
-                          "#fff",
-                        fontWeight:
-                          "bold",
-                        textAlign:
-                          "center",
-                      }}
-                    >
-                      Fechar
-                    </Text>
-                  </TouchableOpacity>
-                </ScrollView>
-              </View>
-            </View>
-          </Modal>
+          {selectedEntry ? (
+            <EntryDetailsModal
+              visible
+              entry={selectedEntry}
+              isTutor={isTutor}
+              onClose={() => setSelectedEntryId(undefined)}
+              isRecordEditable={isEditableToday}
+              isEntryEditable={isDiaryEntryEditable}
+              onEditRecord={openEditRecord}
+              onDeleteRecord={handleDeleteRecord}
+            />
+          ) : undefined}
 
           <RecordFormModal
-            visible={
-              recordModalVisible
-            }
+            visible={recordModalVisible}
             initialData={
               recordBeingEdited
                 ? {
-                  type:
-                    recordBeingEdited.type,
-                  subtype:
-                    recordBeingEdited.subtype,
-                  value:
-                    recordBeingEdited.value,
-                  unit:
-                    recordBeingEdited.unit,
-                  note:
-                    recordBeingEdited.note,
-                }
+                    type: recordBeingEdited.type,
+                    subtype: recordBeingEdited.subtype,
+                    value: recordBeingEdited.value,
+                    unit: recordBeingEdited.unit,
+                    note: recordBeingEdited.note,
+                  }
                 : undefined
             }
             onClose={() => {
-              setRecordModalVisible(
-                false,
-              );
-              setRecordBeingEdited(
-                undefined,
-              );
+              setRecordModalVisible(false);
+              setRecordBeingEdited(undefined);
             }}
-            onSubmit={
-              handleSaveRecord
-            }
+            onSubmit={handleSaveRecord}
           />
 
-          <DiaryEntryEditModal
-            visible={
-              diaryEditVisible
-            }
-            initialText={
-              diaryBeingEdited?.title ??
-              ""
-            }
+          <DiaryTextModal
+            visible={diaryEditVisible}
+            title="Editar diário"
+            initialText={diaryBeingEdited?.title ?? ""}
+            textPlaceholder="Escreva aqui como seu pet está..."
+            submitLabel="Salvar alterações"
+            validationMessage="Escreva como seu pet está."
             onClose={() => {
-              setDiaryEditVisible(
-                false,
-              );
-              setDiaryBeingEdited(
-                undefined,
-              );
+              setDiaryEditVisible(false);
+              setDiaryBeingEdited(undefined);
             }}
-            onSubmit={
-              handleEditDiary
-            }
+            onSubmit={handleEditDiary}
           />
         </>
       )}

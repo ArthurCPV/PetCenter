@@ -1,17 +1,15 @@
 import { useEffect, useState } from "react";
 import {
-  Modal,
   View,
   Text,
   TextInput,
   TouchableOpacity,
-  Pressable,
   ScrollView,
 } from "react-native";
 
 import { styles_th } from "../styles/theme";
-import { styles_gb } from "../styles/global";
 import type { CreatePetData } from "../types";
+import ModalShell from "./ModalShell";
 
 type Props = {
   visible: boolean;
@@ -110,6 +108,8 @@ const CreatePetModal = ({
   const [speciesError, setSpeciesError] = useState("");
   const [breedError, setBreedError] = useState("");
   const [birthDateError, setBirthDateError] = useState("");
+  const [requestError, setRequestError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const resetForm = () => {
     setName(initialData?.name ?? "");
@@ -124,6 +124,7 @@ const CreatePetModal = ({
     setSpeciesError("");
     setBreedError("");
     setBirthDateError("");
+    setRequestError("");
   };
 
   const hydrateForm = () => {
@@ -139,6 +140,7 @@ const CreatePetModal = ({
     setSpeciesError("");
     setBreedError("");
     setBirthDateError("");
+    setRequestError("");
   };
 
   useEffect(() => {
@@ -148,6 +150,10 @@ const CreatePetModal = ({
   }, [visible, initialData]);
 
   const handleClose = () => {
+    if (isSubmitting) {
+      return;
+    }
+
     resetForm();
     onClose();
   };
@@ -156,17 +162,20 @@ const CreatePetModal = ({
     setBreedUnknown((currentValue) => !currentValue);
     setBreed("");
     setBreedError("");
+    setRequestError("");
   };
 
   const handleBirthDateUnknown = () => {
     setBirthDateUnknown((currentValue) => !currentValue);
     setBirthDate("");
     setBirthDateError("");
+    setRequestError("");
   };
 
   const handleBirthDateChange = (value: string) => {
     const formattedValue = formatBirthDate(value);
     setBirthDate(formattedValue);
+    setRequestError("");
 
     if (formattedValue.length === 10) {
       setBirthDateError(
@@ -230,81 +239,43 @@ const CreatePetModal = ({
         : birthDate,
     };
 
-    await onCreate(data);
-    resetForm();
-    onClose();
+    setRequestError("");
+    setIsSubmitting(true);
+
+    try {
+      await onCreate(data);
+      resetForm();
+      onClose();
+    } catch (error) {
+      setRequestError(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível salvar os dados do pet. Tente novamente.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <Modal
+    <ModalShell
       visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={handleClose}
+      title={title}
+      onClose={handleClose}
+      isSubmitting={isSubmitting}
     >
-      <View
-        style={styles_gb.modalOverlay}
-      >
-        <Pressable
-          style={{
-            position: "absolute",
-            top: 0,
-            right: 0,
-            bottom: 0,
-            left: 0,
-          }}
-          onPress={handleClose}
-        />
-
-        <View
-          style={{
-            backgroundColor: "#fff",
-            borderRadius: 20,
-            padding: 20,
-            maxHeight: "90%",
-          }}
-        >
           <ScrollView
+            style={{ flexShrink: 1 }}
             keyboardShouldPersistTaps="handled"
             showsVerticalScrollIndicator
           >
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <Text style={styles_th.title}>{title}</Text>
-
-              <TouchableOpacity
-                onPress={handleClose}
-                accessibilityLabel="Fechar"
-                style={{
-                  width: 40,
-                  height: 40,
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 26,
-                    color: "#666",
-                    fontWeight: "bold",
-                  }}
-                >
-                  ×
-                </Text>
-              </TouchableOpacity>
-            </View>
-
             <TextInput
               placeholder="Nome do pet"
               placeholderTextColor="#888"
               value={name}
               onChangeText={(value) => {
                 setName(value);
+                setRequestError("");
                 if (value.trim()) setNameError("");
               }}
               style={[
@@ -334,6 +305,7 @@ const CreatePetModal = ({
               value={species}
               onChangeText={(value) => {
                 setSpecies(value);
+                setRequestError("");
                 if (value.trim()) setSpeciesError("");
               }}
               style={[
@@ -363,6 +335,7 @@ const CreatePetModal = ({
               value={breed}
               onChangeText={(value) => {
                 setBreed(value);
+                setRequestError("");
                 if (value.trim()) setBreedError("");
               }}
               editable={!breedUnknown}
@@ -512,7 +485,21 @@ const CreatePetModal = ({
               </Text>
             </TouchableOpacity>
 
+            {requestError ? (
+              <Text
+                accessibilityRole="alert"
+                style={{
+                  color: "#E53935",
+                  marginTop: 12,
+                  fontSize: 14,
+                }}
+              >
+                {requestError}
+              </Text>
+            ) : undefined}
+
             <TouchableOpacity
+              disabled={isSubmitting}
               style={[
                 styles_th.button,
                 {
@@ -522,7 +509,9 @@ const CreatePetModal = ({
                   borderRadius: 16,
                 },
               ]}
-              onPress={handleCreate}
+              onPress={() => {
+                void handleCreate();
+              }}
             >
               <Text
                 style={{
@@ -530,13 +519,11 @@ const CreatePetModal = ({
                   fontWeight: "bold",
                 }}
               >
-                {submitLabel}
+                {isSubmitting ? "Salvando..." : submitLabel}
               </Text>
             </TouchableOpacity>
           </ScrollView>
-        </View>
-      </View>
-    </Modal>
+    </ModalShell>
   );
 };
 

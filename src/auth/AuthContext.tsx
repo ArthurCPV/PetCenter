@@ -12,6 +12,7 @@ import { getUserByEmail, login } from "../api/auth";
 
 import {
   clearStoredSession,
+  clearStoredSessionOnce,
   getStoredUser,
   saveStoredUser,
 } from "./authStorage";
@@ -68,6 +69,8 @@ export const AuthProvider = ({
 
     const restoreSession = async (): Promise<void> => {
       try {
+        await clearStoredSessionOnce();
+
         const [storedToken, storedUser] = await Promise.all([
           getToken(),
           getStoredUser(),

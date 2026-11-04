@@ -1,4 +1,4 @@
-import type { ApiAlertType } from "./api";
+import type { ApiAlertResponse, ApiAlertType } from "./api";
 
 export type Registro = {
   id: string;
@@ -15,6 +15,7 @@ export type Registro = {
 export type DiaryEntry = {
   id: string;
   idPet: string;
+  entryDate: string;
   title: string;
   createdAt: Date;
   records: Registro[];
@@ -44,20 +45,7 @@ export type CreateRecordData = {
   note?: string;
 };
 
-export type Alerta = {
-  id: number;
-  petId: number;
-  petNome: string;
-  veterinarioId: number;
-  veterinarioNome: string;
-  tipo: string;
-  titulo: string;
-  descricao?: string;
-  dataInicio: string;
-  frequenciaHoras?: number;
-  dataFim?: string;
-  ativo: boolean;
-};
+export type Alerta = ApiAlertResponse;
 
 export type CreateAlertData = {
   petId: string;

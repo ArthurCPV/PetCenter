@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 
 import {
-  activateAlert as activateAlertApi,
   createAlert,
   deactivateAlert as deactivateAlertApi,
   listAlerts,
@@ -84,19 +83,6 @@ const useAlerts = () => {
     [loadAlerts, user],
   );
 
-  const activateAlert = useCallback(
-    async (id: string): Promise<void> => {
-      if (user?.tipoUsuario !== "VETERINARIO") {
-        throw new Error("Somente veterinários podem ativar alertas.");
-      }
-
-      await activateAlertApi(id);
-
-      await loadAlerts();
-    },
-    [loadAlerts, user],
-  );
-
   const deactivateAlert = useCallback(
     async (id: string): Promise<void> => {
       if (user?.tipoUsuario !== "VETERINARIO") {
@@ -123,7 +109,6 @@ const useAlerts = () => {
     isRefreshing,
     loadError,
     addAlert,
-    activateAlert,
     deactivateAlert,
     refresh,
   };

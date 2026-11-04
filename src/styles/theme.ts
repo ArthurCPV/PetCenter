@@ -49,22 +49,6 @@ export const styles_th = StyleSheet.create({
     color: colors.primary,
   },
 
-  /* PLACEHOLDERS */
-
-  placeholderTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: colors.primary,
-    textAlign: "center",
-  },
-
-  placeholderSub: {
-    fontSize: 12,
-    color: "#999",
-    marginTop: 5,
-    textAlign: "center",
-  },
-
   emptyText: {
     textAlign: "center",
     marginTop: 50,

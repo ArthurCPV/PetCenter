@@ -146,8 +146,6 @@ const Register = () => {
   const [isSubmitting, setIsSubmitting] =
     useState(false);
 
-  let javaUserWasCreated = false;
-
   const clearFieldError = (
     field: keyof FieldErrors,
   ): void => {
@@ -453,7 +451,7 @@ const Register = () => {
       </View>
 
       <TextInput
-        placeholder="Nome"
+        placeholder="Nome (3 a 100 caracteres)"
         value={nome}
         onChangeText={(value) => {
           setNome(value);
@@ -484,7 +482,7 @@ const Register = () => {
       ) : undefined}
 
       <TextInput
-        placeholder="Email"
+        placeholder="E-mail válido (máx. 150 caracteres)"
         value={email}
         onChangeText={(value) => {
           setEmail(value);
@@ -518,7 +516,7 @@ const Register = () => {
       ) : undefined}
 
       <TextInput
-        placeholder="Senha (6 a 8 caracteres)"
+        placeholder="Senha (mínimo 6 caracteres)"
         value={senha}
         onChangeText={(value) => {
           setSenha(value);
@@ -552,7 +550,7 @@ const Register = () => {
       ) : undefined}
 
       <TextInput
-        placeholder="Telefone"
+        placeholder="Telefone com DDD"
         value={telefone}
         onChangeText={(value) => {
           setTelefone(
@@ -590,7 +588,7 @@ const Register = () => {
         "VETERINARIO" ? (
         <>
           <TextInput
-            placeholder="CRMV"
+            placeholder="CRMV (4 a 20 caracteres)"
             value={crmv}
             onChangeText={(value) => {
               setCrmv(value);
@@ -621,7 +619,7 @@ const Register = () => {
           ) : undefined}
 
           <TextInput
-            placeholder="Especialidade"
+            placeholder="Especialidade (3 a 100 caracteres)"
             value={especialidade}
             onChangeText={(value) => {
               setEspecialidade(
@@ -658,7 +656,7 @@ const Register = () => {
           ) : undefined}
 
           <TextInput
-            placeholder="Descrição profissional"
+            placeholder="Descrição profissional (10 a 500 caracteres)"
             value={descricao}
             onChangeText={(value) => {
               setDescricao(value);

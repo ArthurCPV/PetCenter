@@ -8,7 +8,7 @@ import type {
 
 import type { CreateRecordData, Registro } from "../types";
 
-const toRegistro = (registro: ApiRegistroResponse): Registro => ({
+export const toRegistro = (registro: ApiRegistroResponse): Registro => ({
   id: String(registro.id),
 
   entryId: String(registro.idDiarioEntrada),

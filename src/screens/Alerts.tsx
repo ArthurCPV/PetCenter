@@ -27,45 +27,14 @@ import {
 import AlertFormModal from "../components/AlertFormModal";
 import PetFilter from "../components/PetFilter";
 import { useAlertNotifications } from "../store/useAlertNotifications";
+import { getAlertTypeLabel } from "../constants/alerts";
+import { formatDateTime } from "../utils/date";
+import OutlineButton from "../components/OutlineButton";
 
 import type {
   Alerta,
   CreateAlertData,
 } from "../types";
-
-const getAlertTypeLabel = (
-  type: string,
-): string => {
-  switch (type) {
-    case "CONSULTA":
-      return "Consulta";
-
-    case "REMEDIO":
-      return "Remédio";
-
-    case "ALIMENTACAO":
-      return "Alimentação";
-
-    case "EXERCICIO":
-      return "Exercício";
-
-    case "OUTROS":
-      return "Outros";
-
-    default:
-      return type;
-  }
-};
-
-const formatDate = (
-  date: string,
-): string => {
-  return new Date(
-    date,
-  ).toLocaleString(
-    "pt-BR",
-  );
-};
 
 const Alerts = () => {
   const {
@@ -79,7 +48,6 @@ const Alerts = () => {
     isRefreshing,
     loadError,
     addAlert,
-    activateAlert,
     deactivateAlert,
     refresh,
   } = useAlerts();
@@ -96,6 +64,7 @@ const Alerts = () => {
     selectedPetFilterId,
     setSelectedPetFilterId,
   ] = useState<string | undefined>();
+  const [inactiveAlertsExpanded, setInactiveAlertsExpanded] = useState(true);
 
   const isVeterinarian =
     user?.tipoUsuario ===
@@ -198,40 +167,31 @@ const Alerts = () => {
     (
       alert: Alerta,
     ): void => {
-      if (!isVeterinarian) {
+      if (!isVeterinarian || !alert.ativo) {
         return;
       }
 
-      const actionLabel = alert.ativo ? "Desativar" : "Ativar";
-      const confirmMessage = alert.ativo
-        ? "Tem certeza que deseja desativar este alerta?"
-        : "Tem certeza que deseja ativar este alerta?";
-
       Alert.alert(
-        `${actionLabel} alerta`,
-        confirmMessage,
+        "Desativar alerta",
+        "Tem certeza que deseja desativar este alerta?",
         [
           {
             text: "Cancelar",
             style: "cancel",
           },
           {
-            text: actionLabel,
-            style: alert.ativo ? "destructive" : "default",
+            text: "Desativar",
+            style: "destructive",
             onPress: () => {
               void (async () => {
                 try {
-                  if (alert.ativo) {
-                    await deactivateAlert(String(alert.id));
-                  } else {
-                    await activateAlert(String(alert.id));
-                  }
+                  await deactivateAlert(String(alert.id));
                 } catch (error) {
                   Alert.alert(
                     "Erro",
                     error instanceof Error
                       ? error.message
-                      : `Não foi possível ${alert.ativo ? "desativar" : "ativar"} o alerta.`,
+                      : "Não foi possível desativar o alerta.",
                   );
                 }
               })();
@@ -315,7 +275,9 @@ const Alerts = () => {
         </Text>
       ) : undefined}
 
-      {isTutor && !isLoadingNotifications && !hasNotificationPermission ? (
+      {isTutor &&
+      !isLoadingNotifications &&
+      !hasNotificationPermission ? (
         <View
           style={{
             marginHorizontal: 20,
@@ -513,7 +475,7 @@ const Alerts = () => {
               }}
             >
               Início:{" "}
-              {formatDate(
+              {formatDateTime(
                 item.dataInicio,
               )}
             </Text>
@@ -541,26 +503,11 @@ const Alerts = () => {
             )}
 
             {isVeterinarian ? (
-              <TouchableOpacity
+              <OutlineButton
+                label="Desativar alerta"
                 onPress={() => handleToggleAlert(item)}
-                style={{
-                  marginTop: 12,
-                  padding: 10,
-                  borderRadius: 12,
-                  borderWidth: 1,
-                  borderColor: "#E53935",
-                  alignItems: "center",
-                }}
-              >
-                <Text
-                  style={{
-                    color: "#E53935",
-                    fontWeight: "bold",
-                  }}
-                >
-                  Desativar alerta
-                </Text>
-              </TouchableOpacity>
+                style={{ marginTop: 12 }}
+              />
             ) : undefined}
           </View>
         )}
@@ -589,19 +536,35 @@ const Alerts = () => {
         }
         ListFooterComponent={
           <>
-            <Text
-              style={[
-                styles_th.sectionTitle,
-                {
-                  marginTop: 20,
-                  marginBottom: 10,
-                },
-              ]}
+            <TouchableOpacity
+              accessibilityRole="button"
+              accessibilityState={{ expanded: inactiveAlertsExpanded }}
+              onPress={() =>
+                setInactiveAlertsExpanded((expanded) => !expanded)
+              }
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginTop: 20,
+                marginBottom: 10,
+              }}
             >
-              Alertas desativados
-            </Text>
+              <Text style={styles_th.sectionTitle}>
+                Alertas desativados
+              </Text>
+              <Text
+                style={{
+                  fontSize: 20,
+                  color: "#555",
+                  paddingHorizontal: 8,
+                }}
+              >
+                {inactiveAlertsExpanded ? "▲" : "▼"}
+              </Text>
+            </TouchableOpacity>
 
-            {inactiveAlerts.map(
+            {inactiveAlertsExpanded && inactiveAlerts.map(
               (
                 item,
               ) => (

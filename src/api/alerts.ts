@@ -1,4 +1,4 @@
-import { ApiHttpError, request } from "./api";
+import { request } from "./api";
 
 import type {
   ApiAlertRequest,
@@ -42,13 +42,6 @@ export const createAlert = async (
     method: "POST",
     body: JSON.stringify(payload),
   });
-};
-
-export const activateAlert = async (id: string): Promise<ApiAlertResponse> => {
-  throw new ApiHttpError(
-    `O backend não disponibiliza uma operação para reativar o alerta ${id}.`,
-    501,
-  );
 };
 
 export const deactivateAlert = async (

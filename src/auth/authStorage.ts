@@ -5,6 +5,7 @@ import { removeToken } from "../api/api";
 import type { ApiUserResponse } from "../types/api";
 
 const USER_KEY = "PETCENTER_USER";
+const SESSION_RESET_KEY = "PETCENTER_SESSION_RESET_V1";
 
 export const saveStoredUser = async (user: ApiUserResponse): Promise<void> => {
   await AsyncStorage.setItem(USER_KEY, JSON.stringify(user));
@@ -47,4 +48,15 @@ export const getStoredUser = async (): Promise<ApiUserResponse | undefined> => {
 
 export const clearStoredSession = async (): Promise<void> => {
   await Promise.all([removeToken(), AsyncStorage.removeItem(USER_KEY)]);
+};
+
+export const clearStoredSessionOnce = async (): Promise<void> => {
+  const hasResetSession = await AsyncStorage.getItem(SESSION_RESET_KEY);
+
+  if (hasResetSession === "true") {
+    return;
+  }
+
+  await clearStoredSession();
+  await AsyncStorage.setItem(SESSION_RESET_KEY, "true");
 };

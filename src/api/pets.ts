@@ -1,17 +1,33 @@
 import { request } from "./api";
 
-import type { PetDiary } from "../types";
+import type { CreatePetData, PetDiary } from "../types";
 
 import type { ApiPage, ApiPetRequest, ApiPetResponse } from "../types/api";
 
 const UNKNOWN_BIRTH_DATE = "Data de nascimento desconhecida";
+
+const formatBirthDateFromApi = (birthDate: string | undefined): string => {
+  if (!birthDate) {
+    return UNKNOWN_BIRTH_DATE;
+  }
+
+  const isoDateMatch = birthDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+
+  if (!isoDateMatch) {
+    return birthDate;
+  }
+
+  const [, year, month, day] = isoDateMatch;
+
+  return `${day}/${month}/${year}`;
+};
 
 const toPet = (pet: ApiPetResponse): PetDiary => ({
   id: String(pet.id),
   name: pet.nome,
   species: pet.especie,
   breed: pet.raca || "Raça desconhecida",
-  birthDate: pet.dataNascimento || UNKNOWN_BIRTH_DATE,
+  birthDate: formatBirthDateFromApi(pet.dataNascimento),
   entries: [],
 });
 
@@ -41,19 +57,14 @@ const convertBirthDateToApi = (
   return `${year}-${month}-${day}`;
 };
 
-const toPetRequest = (pet: Parameters<typeof createPet>[0]): ApiPetRequest => ({
+const toPetRequest = (pet: CreatePetData): ApiPetRequest => ({
   nome: pet.name,
   especie: pet.species,
   raca: pet.breed === "Raça desconhecida" ? undefined : pet.breed,
   dataNascimento: convertBirthDateToApi(pet.birthDate),
 });
 
-export const createPet = async (data: {
-  name: string;
-  species: string;
-  breed?: string;
-  birthDate?: string;
-}): Promise<PetDiary> => {
+export const createPet = async (data: CreatePetData): Promise<PetDiary> => {
   const response = await request<ApiPetResponse>("/api/pets", {
     method: "POST",
     body: JSON.stringify(toPetRequest(data)),
@@ -78,12 +89,7 @@ export const listPetsByUser = async (userId: number): Promise<PetDiary[]> => {
 
 export const updatePet = async (
   id: string,
-  data: {
-    name: string;
-    species: string;
-    breed?: string;
-    birthDate?: string;
-  },
+  data: CreatePetData,
 ): Promise<PetDiary> => {
   const response = await request<ApiPetResponse>(`/api/pets/${id}`, {
     method: "PUT",

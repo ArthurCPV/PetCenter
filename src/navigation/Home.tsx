@@ -11,7 +11,6 @@ import type {
 } from "../types/navigation";
 
 import Diary from "../screens/Diary";
-import Details from "../screens/Details";
 import Alerts from "../screens/Alerts";
 import AI from "../screens/AI";
 import Profile from "../screens/Profile";
@@ -182,10 +181,6 @@ const Home = () => {
                         component={Tabs}
                     />
 
-                    <Stack.Screen
-                        name="Details"
-                        component={Details}
-                    />
                 </>
             )}
         </Stack.Navigator>

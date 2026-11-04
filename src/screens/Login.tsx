@@ -103,7 +103,7 @@ const Login = () => {
         </Text>
 
         <TextInput
-          placeholder="Email"
+          placeholder="E-mail"
           value={email}
           onChangeText={(value) => {
             setEmail(value);
@@ -129,7 +129,7 @@ const Login = () => {
         />
 
         <TextInput
-          placeholder="Senha"
+          placeholder="Senha (mínimo 6 caracteres)"
           value={senha}
           onChangeText={(value) => {
             setSenha(value);

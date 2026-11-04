@@ -1,14 +1,14 @@
 import React from "react";
 import {
-  TouchableOpacity,
   Text,
+  TouchableOpacity,
   View,
 } from "react-native";
 
 import { styles_th } from "../styles/theme";
-import { styles_gb } from "../styles/global";
 
 import type { PetDiary } from "../types";
+import OutlineButton from "./OutlineButton";
 
 type Props = {
   pet: PetDiary;
@@ -57,49 +57,20 @@ const PetCard = ({
           }}
         >
           {onEdit ? (
-            <TouchableOpacity
+            <OutlineButton
+              label="✎ Editar Diário"
               onPress={onEdit}
-              style={{
-                flex: 1,
-                padding: 10,
-                borderRadius: 12,
-                borderWidth: 1,
-                borderColor: "#E53935",
-                alignItems: "center",
-              }}
-            >
-              <Text
-                style={{
-                  color: "#E53935",
-                  fontWeight: "bold",
-                }}
-              >
-                ✎ Editar Diário
-              </Text>
-            </TouchableOpacity>
+              style={{ flex: 1 }}
+            />
           ) : null}
 
           {onDelete ? (
-            <TouchableOpacity
+            <OutlineButton
+              label="🗑 Excluir diário"
               onPress={onDelete}
-              style={{
-                flex: 1,
-                padding: 10,
-                borderRadius: 12,
-                borderWidth: 1,
-                borderColor: "#B71C1C",
-                alignItems: "center",
-              }}
-            >
-              <Text
-                style={{
-                  color: "#B71C1C",
-                  fontWeight: "bold",
-                }}
-              >
-                🗑 Excluir diário
-              </Text>
-            </TouchableOpacity>
+              color="#B71C1C"
+              style={{ flex: 1 }}
+            />
           ) : null}
         </View>
       )}
